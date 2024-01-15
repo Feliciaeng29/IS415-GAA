@@ -318,7 +318,7 @@ The code chunk below performs two operations at one go. Firstly, identify pre-sc
 mpsz3414$`PreSch Count`<- lengths(st_intersects(mpsz3414, preschool3414))
 ```
 
-**Warning**: You should not confuse with [st_intersection()](https://r-spatial.github.io/sf/reference/geos_binary_ops.html).
+| **Warning**: You should not confuse with [st_intersection()](https://r-spatial.github.io/sf/reference/geos_binary_ops.html).
 
 You can check the summary statistics of the newly derived *PreSch Count* field by using *summary()* as shown in the code chunk below.
 

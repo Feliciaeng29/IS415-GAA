@@ -201,5 +201,40 @@
     "title": "In class Exercise 1",
     "section": "",
     "text": "pacman::p_load(sf, tmap, tidyverse)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-class_Ex02.html",
+    "href": "In-class_Ex/In-class_Ex02/In-class_Ex02.html",
+    "title": "In class Exercise 2: R for Geospatial Data Science",
+    "section": "",
+    "text": "The following R packages that we will be using:\n\narrow: Read and write Parquet files, an efficient and widely used columnar format\nlubridate: lubricate your data type. To work with date and time. Part of the family of tidyverse.\ntidyverse\ntmap\nsf\n\n\n\nCode\npacman::p_load(arrow, lubridate, tidyverse, tmap, sf)"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#extracting-trip-starting-locations",
+    "href": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#extracting-trip-starting-locations",
+    "title": "In class Exercise 2: R for Geospatial Data Science",
+    "section": "Extracting trip Starting locations",
+    "text": "Extracting trip Starting locations\n\nExtracting trip’s origin locations\nDerive 3 columns (ie. variations) for weekday, starting hour and day of the month\nName the output tibble data.frame origin_df\n\n\n\nCode\norigin_df &lt;- df %&gt;%\n  group_by(trj_id) %&gt;%\n  arrange(pingtimestamp) %&gt;%\n  filter(row_number()==1) %&gt;%\n  mutate(weekday = wday(pingtimestamp,\n                        label=TRUE,\n                        abbr=TRUE),\n         start_hr = factor(hour(pingtimestamp)),\n         day = factor(mday(pingtimestamp)))\n\n\n\nFirst, we will call the df file. Next, I group them according to the trajectory. I arrange them according to their ping time stamp. (they are all sorted according to their time stamp ascending-default) Filter the row number = 1. To allow me pull out all the origin. Use mutate to derive new field: weekday, start_hr, day.\nUse wday a lubridate function - stand for workday.\nUse hour function to calculate the hour.\nmday - stand for month of the day."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#extracting-trip-ending-locations",
+    "href": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#extracting-trip-ending-locations",
+    "title": "In class Exercise 2: R for Geospatial Data Science",
+    "section": "Extracting trip Ending locations",
+    "text": "Extracting trip Ending locations\n\n\nCode\ndestination_df &lt;- df %&gt;%\n  group_by(trj_id) %&gt;%\n  arrange(desc(pingtimestamp)) %&gt;%\n  filter(row_number()==1) %&gt;%\n  mutate(weekday = wday(pingtimestamp,\n                        label=TRUE,\n                        abbr=TRUE),\n         end_hr = factor(hour(pingtimestamp)),\n         day = factor(mday(pingtimestamp)))\n\n\n\nIn this case we arrange by descending desc ping time stamp. When we sort it descending means the ending point will be the destination for the trajectory. We use end_hr instead of start_hr earlier for the naming for variables."
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#visualising-frequency-distribution",
+    "href": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#visualising-frequency-distribution",
+    "title": "In class Exercise 2: R for Geospatial Data Science",
+    "section": "Visualising frequency distribution",
+    "text": "Visualising frequency distribution\n\n\nCode\nggplot(data=origin_df, \n       aes(x=weekday)) + \n  geom_bar()"
+  },
+  {
+    "objectID": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#import-data",
+    "href": "In-class_Ex/In-class_Ex02/In-class_Ex02.html#import-data",
+    "title": "In class Exercise 2: R for Geospatial Data Science",
+    "section": "Import data",
+    "text": "Import data\n\n\nCode\norigin_df &lt;- read_rds(\"data/rds/origin_df.rds\")\ndestination_df &lt;- read_rds(\"data/rds/destination_df.rds\")"
   }
 ]

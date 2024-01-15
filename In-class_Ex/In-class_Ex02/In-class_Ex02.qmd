@@ -1,0 +1,119 @@
+---
+title: "In class Exercise 2: R for Geospatial Data Science"
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+    toc-depth: 4
+execute:
+  eval: true
+  echo: true
+  warning: false
+editor: visual
+---
+
+# Getting Started
+
+The following R packages that we will be using:
+
+-   arrow: Read and write Parquet files, an efficient and widely used columnar format
+
+-   lubridate: lubricate your data type. To work with date and time. Part of the family of tidyverse.
+
+-   tidyverse
+
+-   tmap
+
+-   sf
+
+```{r}
+pacman::p_load(arrow, lubridate, tidyverse, tmap, sf)
+```
+
+# Importing Grab-Posisi Dataset
+
+-   Write a code to import *`part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet`* using the appropriate function of arrow package into R. Call the file *df*.
+
+| Need to add ../../ if we put our data at the root directory
+
+```{r}
+#| eval: false
+df <- read_parquet("data/GrabPosisi/part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet")
+```
+
+To convert the data type of pingtimestamp from character to date-time. `as_datetime()` is a **lubridate function**.
+
+```{r}
+#| eval: false
+df$pingtimestamp <- as_datetime(df$pingtimestamp)
+```
+
+To save the reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.
+
+```{r}
+#| eval: false
+write_rds(df, "data/rds/part0.rds")
+```
+
+## Extracting trip Starting locations
+
+-   Extracting trip's origin locations
+
+-   Derive 3 columns (ie. variations) for weekday, starting hour and day of the month
+
+-   Name the output tibble data.frame *origin_df*
+
+```{r}
+#| eval: false
+origin_df <- df %>%
+  group_by(trj_id) %>%
+  arrange(pingtimestamp) %>%
+  filter(row_number()==1) %>%
+  mutate(weekday = wday(pingtimestamp,
+                        label=TRUE,
+                        abbr=TRUE),
+         start_hr = factor(hour(pingtimestamp)),
+         day = factor(mday(pingtimestamp)))
+```
+
+> First, we will call the df file. Next, I group them according to the trajectory. I arrange them according to their ping time stamp. (they are all sorted according to their time stamp ascending-default) Filter the row number = 1. To allow me pull out all the origin. Use mutate to derive new field: weekday, start_hr, day.
+>
+> Use wday a lubridate function - stand for workday.
+>
+> Use hour function to calculate the hour.
+>
+> mday - stand for month of the day.
+
+## Extracting trip Ending locations
+
+```{r}
+#| eval: false
+destination_df <- df %>%
+  group_by(trj_id) %>%
+  arrange(desc(pingtimestamp)) %>%
+  filter(row_number()==1) %>%
+  mutate(weekday = wday(pingtimestamp,
+                        label=TRUE,
+                        abbr=TRUE),
+         end_hr = factor(hour(pingtimestamp)),
+         day = factor(mday(pingtimestamp)))
+```
+
+> In this case we arrange by descending `desc` ping time stamp. When we sort it descending means the ending point will be the destination for the trajectory. We use end_hr instead of start_hr earlier for the naming for variables.
+
+
+```{r}
+#| echo: false
+#| eval: false
+write_rds(origin_df, "data/rds/origin_df.rds")
+write_rds(destination_df, 
+          "data/rds/destination_df.rds")
+```
+
+## Import data
+
+```{r}
+origin_df <- read_rds("data/rds/origin_df.rds")
+destination_df <- read_rds("data/rds/destination_df.rds")
+```
+

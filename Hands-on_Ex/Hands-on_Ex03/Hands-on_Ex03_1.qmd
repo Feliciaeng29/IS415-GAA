@@ -1,5 +1,5 @@
 ---
-title: "Hands on Exercise 3: 1st & 2nd Order Spatial Point Patterns Analysis Methods"
+title: "Hands on Exercise 3: 1st Order Spatial Point Patterns Analysis Methods"
 ---
 
 # **1. Installing and Loading the R packages**
@@ -711,7 +711,7 @@ clarkevans.test(childcare_ck_ppp,
 
 ### 4.5.3 Clark and Evans Test: Tampines planning area
 
-In the code chunk below, the similar test is used to analyse the spatial point patterns of childcare centre in Tampines planning area.
+The similar test is used to analyse the spatial point patterns of childcare centre in Tampines planning area.
 
 ```{r}
 clarkevans.test(childcare_tm_ppp,

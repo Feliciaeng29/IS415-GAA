@@ -1,5 +1,13 @@
 ---
 title: "Hands on Exercise 3: 2nd Order Spatial Point Patterns Analysis Methods"
+format:
+  html:
+    toc-depth: 4
+execute:
+  eval: true
+  echo: true
+  warning: false
+editor: visual
 ---
 
 ## **Installing and Loading the R packages**

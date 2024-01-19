@@ -1,7 +1,0 @@
----
-title: "In class Exercise 1"
----
-
-```{r}
-pacman::p_load(sf, tmap, tidyverse)
-```

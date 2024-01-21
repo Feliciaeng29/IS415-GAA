@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>IS415-GAA - In class Exercise 2: R for Geospatial Data Science</title>
+<title>IS415-GAA - Hands On Exercise 4: Network Constrained Spatial Point Patterns Analysis</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -190,13 +190,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#getting-started" id="toc-getting-started" class="nav-link active" data-scroll-target="#getting-started">Getting Started</a></li>
-  <li><a href="#importing-grab-posisi-dataset" id="toc-importing-grab-posisi-dataset" class="nav-link" data-scroll-target="#importing-grab-posisi-dataset">Importing Grab-Posisi Dataset</a>
-  <ul>
-  <li><a href="#extracting-trip-starting-locations" id="toc-extracting-trip-starting-locations" class="nav-link" data-scroll-target="#extracting-trip-starting-locations">Extracting trip Starting locations</a></li>
-  <li><a href="#extracting-trip-ending-locations" id="toc-extracting-trip-ending-locations" class="nav-link" data-scroll-target="#extracting-trip-ending-locations">Extracting trip Ending locations</a></li>
-  <li><a href="#import-data" id="toc-import-data" class="nav-link" data-scroll-target="#import-data">Import data</a></li>
-  </ul></li>
+  <li><a href="#the-data" id="toc-the-data" class="nav-link active" data-scroll-target="#the-data">1. <strong>The Data</strong></a></li>
+  <li><a href="#installing-and-launching-the-r-packages" id="toc-installing-and-launching-the-r-packages" class="nav-link" data-scroll-target="#installing-and-launching-the-r-packages">2. <strong>Installing and launching the R packages</strong></a></li>
+  <li><a href="#import-data-and-preparation" id="toc-import-data-and-preparation" class="nav-link" data-scroll-target="#import-data-and-preparation">3. <strong>Import Data and Preparation</strong></a></li>
+  <li><a href="#print-content-of-spatiallinedataframe-spatialpointsdataframe-by-using-str-function" id="toc-print-content-of-spatiallinedataframe-spatialpointsdataframe-by-using-str-function" class="nav-link" data-scroll-target="#print-content-of-spatiallinedataframe-spatialpointsdataframe-by-using-str-function">4. <strong>Print content of SpatialLineDataFrame &amp; SpatialPointsDataFrame by using str function</strong></a></li>
+  <li><a href="#sptransform-of-sp-package-is-used-to-assign-epsg-code-to-the-spatialdataframes.-the-epsg3414-is-the-code-for-svy21." id="toc-sptransform-of-sp-package-is-used-to-assign-epsg-code-to-the-spatialdataframes.-the-epsg3414-is-the-code-for-svy21." class="nav-link" data-scroll-target="#sptransform-of-sp-package-is-used-to-assign-epsg-code-to-the-spatialdataframes.-the-epsg3414-is-the-code-for-svy21.">5. <strong>spTransform() of sp package is used to assign EPSG code to the SpatialDataFrames. The epsg:3414 is the code for svy21.</strong></a></li>
   </ul>
 </nav>
     </div>
@@ -205,7 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">In class Exercise 2: R for Geospatial Data Science</h1>
+<h1 class="title">Hands On Exercise 4: Network Constrained Spatial Point Patterns Analysis</h1>
 </div>
 
 
@@ -220,109 +218,127 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<section id="getting-started" class="level1">
-<h1>Getting Started</h1>
-<p>The following R packages that we will be using:</p>
+<section id="the-data" class="level1">
+<h1>1. <strong>The Data</strong></h1>
+<p>In this study, we will analyse the spatial distribution of childcare centre in <a href="https://en.wikipedia.org/wiki/Punggol">Punggol planning area</a>. For the purpose of this study, two geospatial data sets will be used. They are:</p>
 <ul>
-<li><p>arrow: Read and write Parquet files, an efficient and widely used columnar format</p></li>
-<li><p>lubridate: lubricate your data type. To work with date and time. Part of the family of tidyverse.</p></li>
-<li><p>tidyverse</p></li>
-<li><p>tmap</p></li>
-<li><p>sf</p></li>
+<li><p><em>Punggol_St</em>, a line features geospatial data which store the road network within Punggol Planning Area.</p></li>
+<li><p><em>Punggol_CC</em>, a point feature geospatial data which store the location of childcare centres within Punggol Planning Area.</p></li>
 </ul>
-<div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(arrow, lubridate, tidyverse, tmap, sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
+<p>Both data sets are in ESRI shapefile format.</p>
 </section>
-<section id="importing-grab-posisi-dataset" class="level1">
-<h1>Importing Grab-Posisi Dataset</h1>
+<section id="installing-and-launching-the-r-packages" class="level1">
+<h1>2. <strong>Installing and launching the R packages</strong></h1>
+<p>In this hands-on exercise, four R packages will be used, they are:</p>
 <ul>
-<li>Write a code to import <em><code>part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet</code></em> using the appropriate function of arrow package into R. Call the file <em>df</em>.</li>
+<li><p><a href="https://cran.r-project.org/web/packages/spNetwork/">spNetwork</a>, which provides functions to perform Spatial Point Patterns Analysis such as kernel density estimation (KDE) and K-function on network. It also can be used to build spatial matrices (‘listw’ objects like in ‘spdep’ package) to conduct any kind of traditional spatial analysis with spatial weights based on reticular distances.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/rgdal/">rgdal</a>, which provides bindings to the <a href="https://gdal.org/">‘Geospatial’ Data Abstraction Library (GDAL) (&gt;= 1.11.4)</a> and access to projection/transformation operations from the <a href="https://proj.org/">PROJ</a> library. In this exercise, rgdal will be used to import geospatial data in R and store as <a href="https://cran.r-project.org/web/packages/sp/vignettes/intro_sp.pdf">sp</a> objects.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/sp/">sp</a>, which provides classes and methods for dealing with spatial data in R. In this exercise, it will be used to manage SpatialPointsDataFrame and SpatiaLinesDataFrame, and for performing projection transformation.</p></li>
+<li><p><a href="https://cran.r-project.org/web/packages/tmap/"><strong>tmap</strong></a> which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using <a href="https://leafletjs.com/">leaflet</a> API.</p></li>
 </ul>
-<p>Need to add ../../ if we put our data at the root directory</p>
+<p>To install and launch the four R packages.</p>
 <div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_parquet</span>(<span class="st">"data/GrabPosisi/part-00000-8bbff892-97d2-4011-9961-703e38972569.c000.snappy.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"rgdal"</span>, <span class="at">repos =</span> <span class="st">"https://packagemanager.posit.co/cran/2023-10-13"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>package 'rgdal' successfully unpacked and MD5 sums checked
+
+The downloaded binary packages are in
+    C:\Users\felie\AppData\Local\Temp\RtmpEzBAsV\downloaded_packages</code></pre>
 </div>
-<p>To convert the data type of pingtimestamp from character to date-time. <code>as_datetime()</code> is a <strong>lubridate function</strong>.</p>
-<div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>pingtimestamp <span class="ot">&lt;-</span> <span class="fu">as_datetime</span>(df<span class="sc">$</span>pingtimestamp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 </div>
-<p>To save the reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.</p>
 <div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(df, <span class="st">"data/rds/part0.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<section id="extracting-trip-starting-locations" class="level2">
-<h2 class="anchored" data-anchor-id="extracting-trip-starting-locations">Extracting trip Starting locations</h2>
-<ul>
-<li><p>Extracting trip’s origin locations</p></li>
-<li><p>Derive 3 columns (ie. variations) for weekday, starting hour and day of the month</p></li>
-<li><p>Name the output tibble data.frame <em>origin_df</em></p></li>
-</ul>
-<div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>origin_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trj_id) <span class="sc">%&gt;%</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(pingtimestamp) <span class="sc">%&gt;%</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">weekday =</span> <span class="fu">wday</span>(pingtimestamp,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">label=</span><span class="cn">TRUE</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">abbr=</span><span class="cn">TRUE</span>),</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">start_hr =</span> <span class="fu">factor</span>(<span class="fu">hour</span>(pingtimestamp)),</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">day =</span> <span class="fu">factor</span>(<span class="fu">mday</span>(pingtimestamp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sp, sf, rgdal, spNetwork, tmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <blockquote class="blockquote">
-<p>First, we will call the df file. Next, I group them according to the trajectory. I arrange them according to their ping time stamp. (they are all sorted according to their time stamp ascending-default) Filter the row number = 1. To allow me pull out all the origin. Use mutate to derive new field: weekday, start_hr, day.</p>
-<p>Use wday a lubridate function - stand for workday.</p>
-<p>Use hour function to calculate the hour.</p>
-<p>mday - stand for month of the day.</p>
+<p>Own notes:</p>
+<ul>
+<li><p><strong>spNetwork</strong> provides functions to:</p>
+<ul>
+<li><p>perform Spatial Point Patterns Analysis such as kernel density estimation (KDE) and K-function on network</p></li>
+<li><p>build spatial matrices (‘listw’ objects like in ‘spdep’ package) to conduct any kind of traditional spatial analysis with spatial weights based on reticular distances</p></li>
+</ul></li>
+<li><p><strong>rgdal</strong> provides:</p>
+<ul>
+<li><p>bindings to the <a href="https://gdal.org/">‘Geospatial’ Data Abstraction Library (GDAL) (&gt;= 1.11.4)</a></p></li>
+<li><p>access to projection/transformation operations from the <a href="https://proj.org/">PROJ</a> library.</p></li>
+<li><p>In this exercise, rgdal will be used to import geospatial data in R and store as <strong>sp</strong> objects.</p></li>
+</ul></li>
+<li><p><strong>sp</strong> provides:</p>
+<ul>
+<li><p>classes and methods for dealing with spatial data in R.</p></li>
+<li><p>In this exercise, it will be used to manage <strong>SpatialPointsDataFrame</strong> and <strong>SpatialLinesDataFrame</strong>, &amp; for performing projection transformation.</p></li>
+</ul></li>
+<li><p><strong>tmap</strong>: functions for plotting cartographic quality static point patterns maps or interactive maps by using leaflet API</p></li>
+</ul>
 </blockquote>
 </section>
-<section id="extracting-trip-ending-locations" class="level2">
-<h2 class="anchored" data-anchor-id="extracting-trip-ending-locations">Extracting trip Ending locations</h2>
+<section id="import-data-and-preparation" class="level1">
+<h1>3. <strong>Import Data and Preparation</strong></h1>
+<p>Read OGR vector maps into Spatial objects using <code>readOGR</code> of rgdal package:</p>
+<ul>
+<li><p>network is a line feature</p></li>
+<li><p>childcare is a point feature</p></li>
+</ul>
 <div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>destination_df <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trj_id) <span class="sc">%&gt;%</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pingtimestamp)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">weekday =</span> <span class="fu">wday</span>(pingtimestamp,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">label=</span><span class="cn">TRUE</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">abbr=</span><span class="cn">TRUE</span>),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">end_hr =</span> <span class="fu">factor</span>(<span class="fu">hour</span>(pingtimestamp)),</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">day =</span> <span class="fu">factor</span>(<span class="fu">mday</span>(pingtimestamp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>network <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>, </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">layer=</span><span class="st">"Punggol_St"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `Punggol_St' from data source 
+  `C:\Feliciaeng29\IS415-GAA\Hands-on_Ex\Hands-on_Ex04\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 2642 features and 2 fields
+Geometry type: LINESTRING
+Dimension:     XY
+Bounding box:  xmin: 34038.56 ymin: 40941.11 xmax: 38882.85 ymax: 44801.27
+Projected CRS: SVY21 / Singapore TM</code></pre>
 </div>
-<blockquote class="blockquote">
-<p>In this case we arrange by descending <code>desc</code> ping time stamp. When we sort it descending means the ending point will be the destination for the trajectory. We use end_hr instead of start_hr earlier for the naming for variables.</p>
-</blockquote>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>childcare <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn=</span><span class="st">"data/geospatial"</span>,</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">layer=</span><span class="st">"Punggol_CC"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Reading layer `Punggol_CC' from data source 
+  `C:\Feliciaeng29\IS415-GAA\Hands-on_Ex\Hands-on_Ex04\data\geospatial' 
+  using driver `ESRI Shapefile'
+Simple feature collection with 61 features and 1 field
+Geometry type: POINT
+Dimension:     XYZ
+Bounding box:  xmin: 34423.98 ymin: 41503.6 xmax: 37619.47 ymax: 44685.77
+z_range:       zmin: 0 zmax: 0
+Projected CRS: SVY21 / Singapore TM</code></pre>
+</div>
+</div>
 </section>
-<section id="import-data" class="level2">
-<h2 class="anchored" data-anchor-id="import-data">Import data</h2>
+<section id="print-content-of-spatiallinedataframe-spatialpointsdataframe-by-using-str-function" class="level1">
+<h1>4. <strong>Print content of SpatialLineDataFrame &amp; SpatialPointsDataFrame by using str function</strong></h1>
 <div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>origin_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/origin_df.rds"</span>)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>destination_df <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(<span class="st">"data/rds/destination_df.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(network)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Classes 'sf' and 'data.frame':  2642 obs. of  3 variables:
+ $ LINK_ID : num  1.16e+08 1.16e+08 1.16e+08 1.16e+08 1.16e+08 ...
+ $ ST_NAME : chr  "PUNGGOL RD" "PONGGOL TWENTY-FOURTH AVE" "PONGGOL SEVENTEENTH AVE" "PONGGOL SEVENTEENTH AVE" ...
+ $ geometry:sfc_LINESTRING of length 2642; first list element:  'XY' num [1:2, 1:2] 36547 36559 44575 44614
+ - attr(*, "sf_column")= chr "geometry"
+ - attr(*, "agr")= Factor w/ 3 levels "constant","aggregate",..: NA NA
+  ..- attr(*, "names")= chr [1:2] "LINK_ID" "ST_NAME"</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(childcare)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Classes 'sf' and 'data.frame':  61 obs. of  2 variables:
+ $ Name    : chr  "kml_10" "kml_99" "kml_100" "kml_101" ...
+ $ geometry:sfc_POINT of length 61; first list element:  'XYZ' num  36174 42550 0
+ - attr(*, "sf_column")= chr "geometry"
+ - attr(*, "agr")= Factor w/ 3 levels "constant","aggregate",..: NA
+  ..- attr(*, "names")= chr "Name"</code></pre>
+</div>
+</div>
+<p>Before delving into visualization, there is an additional prerequisite. spNetwork requires geospatial data to include comprehensive Coordinate Reference System (CRS) information. Similar to how we utilized st_transform() to set the CRS for a dataframe, we will employ spTransform() to achieve the same for our Spatial vector objects. As with our earlier geospatial data, the EPSG code for SVY21 is 3414.</p>
+<p>From the above results, we can see that the Projected CRS is SVY21. Hence, we can assign the EPSG code using the following code chunk:</p>
+</section>
+<section id="sptransform-of-sp-package-is-used-to-assign-epsg-code-to-the-spatialdataframes.-the-epsg3414-is-the-code-for-svy21." class="level1">
+<h1>5. <strong>spTransform() of sp package is used to assign EPSG code to the SpatialDataFrames. The epsg:3414 is the code for svy21.</strong></h1>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

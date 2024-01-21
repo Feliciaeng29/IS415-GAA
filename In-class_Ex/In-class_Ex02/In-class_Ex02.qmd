@@ -2,9 +2,9 @@
 title: "In class Exercise 2: R for Geospatial Data Science"
 format:
   html:
+    toc-depth: 4
     code-fold: true
     code-summary: "Show the code"
-    toc-depth: 4
 execute:
   eval: true
   echo: true
@@ -101,7 +101,6 @@ destination_df <- df %>%
 
 > In this case we arrange by descending `desc` ping time stamp. When we sort it descending means the ending point will be the destination for the trajectory. We use end_hr instead of start_hr earlier for the naming for variables.
 
-
 ```{r}
 #| echo: false
 #| eval: false
@@ -116,4 +115,3 @@ write_rds(destination_df,
 origin_df <- read_rds("data/rds/origin_df.rds")
 destination_df <- read_rds("data/rds/destination_df.rds")
 ```
-

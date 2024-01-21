@@ -1,10 +1,8 @@
 ---
-title: "Hands On Exercise 4: Network Constrained Spatial Point Patterns Analysis"
+title: "Hands On Exercise 3: Network Constrained Spatial Point Patterns Analysis"
 
 format:
   html:
-    code-fold: true
-    code-summary: "Show the code"
     toc-depth: 4
 execute:
   eval: true
@@ -36,11 +34,6 @@ In this hands-on exercise, four R packages will be used, they are:
 -   [**tmap**](https://cran.r-project.org/web/packages/tmap/) which provides functions for plotting cartographic quality static point patterns maps or interactive maps by using [leaflet](https://leafletjs.com/) API.
 
 To install and launch the four R packages.
-
-```{r}
-
-
-```
 
 ```{r}
 install.packages("rgdal", repos = "https://packagemanager.posit.co/cran/2023-10-13")
@@ -112,7 +105,7 @@ network <- st_transform(network,
                        CRS("+init=epsg:3414"))
 ```
 
-To ask: Why this is not able to work:
+[To ask: Why this is not able to work:]{.underline}
 
 `childcare <-spTransform(childcare, CRS("+init=epsg:3414"))`
 

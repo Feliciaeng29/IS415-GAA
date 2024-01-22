@@ -1,5 +1,5 @@
 ---
-title: "In class Exercise 3"
+title: "In class Exercise 3: Kernel Density Estimation"
 ---
 
 # Packages used

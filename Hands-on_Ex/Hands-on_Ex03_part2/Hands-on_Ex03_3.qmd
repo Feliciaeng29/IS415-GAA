@@ -36,6 +36,7 @@ In this hands-on exercise, four R packages will be used, they are:
 To install and launch the four R packages.
 
 ```{r}
+#| eval: false
 install.packages("rgdal", repos = "https://packagemanager.posit.co/cran/2023-10-13")
 ```
 

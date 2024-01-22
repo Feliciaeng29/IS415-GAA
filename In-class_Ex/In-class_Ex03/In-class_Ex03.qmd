@@ -2,11 +2,19 @@
 title: "In class Exercise 3"
 ---
 
-# packages used
+# Packages used
+
+```{r}
+install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
+```
 
 ```{r}
 pacman::p_load(tidyverse, sf, maptools, raster,spatstat, tmap)
 ```
 
 # Data used
+
+```{r}
+
+```
 

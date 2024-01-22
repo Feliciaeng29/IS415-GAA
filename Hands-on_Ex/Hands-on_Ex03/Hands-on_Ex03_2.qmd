@@ -27,6 +27,7 @@ In this hands-on exercise, five R packages will be used, they are:
 To install and launch the five R packages.
 
 ```{r}
+#| eval: false
 install.packages("maptools", repos = "https://packagemanager.posit.co/cran/2023-10-13")
 ```
 
@@ -574,5 +575,3 @@ L_tm.csr <- envelope(childcare_tm_ppp, Lest, nsim = 99, rank = 1, glocal=TRUE)
 plot(L_tm.csr, . - r ~ r, 
      xlab="d", ylab="L(d)-r", xlim=c(0,500))
 ```
-
-

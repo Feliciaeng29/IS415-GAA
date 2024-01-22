@@ -2,6 +2,8 @@
 title: "Take home Exercise 1: Application of Spatial Point Patterns Analysis to discover the geographical distribution of Grab hailing services in Singapore"
 ---
 
+rmb always check for duplicates
+
 ## **Objectives**
 
 Geospatial analytics hold tremendous potential to address complex problems facing society. In this study, you are tasked to apply appropriate spatial point patterns analysis methods to discover the geographical and spatio-temporal distribution of Grab hailing services locations in Singapore.
@@ -27,21 +29,25 @@ The specific tasks of this take-home exercise are as follows:
 -   Describe the spatial patterns revealed by the kernel density maps.
 
 # Loading R packages
+
 ```{r}
 pacman::p_load(arrow, lubridate, tidyverse, sf, tmap)
 ```
 
 # Importing Grab-Posisi Dataset
+
 ```{r}
 grab <- read_parquet("data/apstial/GrabPosisi/part-00000.parquet")
 ```
 
 ## Preparing data for Grab
+
 ```{r}
 glimpse(grab)
 ```
 
 ## Converting data type of pingtimestamp from character to date-time
+
 ```{r}
 grab$pingtimestamp <- as_datetime(grab$pingtimestamp)
 ```
@@ -100,4 +106,3 @@ destination_df <- grab %>%
          end_hr = factor(hour(pingtimestamp)),
          day = factor(mday(pingtimestamp)))
 ```
-

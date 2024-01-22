@@ -1,0 +1,125 @@
+---
+title: "In Class Exe 3: NKDE"
+---
+
+# Launch the 4 packages
+
+```{r}
+pacman::p_load(sf, spNetwork, tmap, classInt, viridis, tidyverse)
+```
+
+## Data IMport and Preparation
+
+st_read() function Read OGR vector maps into Spatial objects using `readOGR` of rgdal package:
+
+-   network is a line feature
+
+-   childcare is a point feature
+
+```{r}
+network <- st_read(dsn="data/geospatial", 
+                   layer="Punggol_St")
+```
+
+```{r}
+childcare <- st_read(dsn="data/geospatial",
+                     layer="Punggol_CC")
+```
+
+[tmap package can be used:]{.underline}
+
+-   View is interactive map. Always keep one exposed the rest is static.
+
+-   (Always remember polygon first than point--- eg. tm_shape then tm_lines)
+
+*** Important tm_shape(childcare) + tm_dots() + will plot first before tm_shape(network) + tm_lines() is plotted. So childcare data is added as dots first before network variable's data is plotted as lines afterwards.
+
+```{r}
+tmap_mode('view')
+tm_shape(childcare) + 
+  tm_dots() + 
+  tm_shape(network) +
+  tm_lines()
+```
+
+Plot is static map
+
+```{r}
+tmap_mode('plot')
+```
+
+## Lixels objects
+
+Prior to computing NetKDE, it is necessary to partition the SpatialLines object into lixels with a specified minimum distance. This operation can be accomplished using the lixelize_lines() function from the spNetwork package
+
+Using with lixelize_lines() of spNetwork as shown in the code:
+
+```{r}
+lixels <- lixelize_lines(network,
+                         750,
+                         mindist = 375)
+```
+
+Important to note for take home exe:
+OSM includes walking path and pedestrain, if don't need exclude them.
+OSM take note that there is alot of other things, cycling path, but grab cannot go up to that path. So we are all talking about the road network so just pull out the road network.
+
+
+
+```{r}
+samples <- lines_center(lixels)
+```
+
+```{r}
+densities <- nkde(network, 
+                  events = childcare,
+                  w = rep(1,nrow(childcare)),
+                  samples = samples,
+                  kernel_name = "quartic",
+                  bw = 300, 
+                  div= "bw", 
+                  method = "simple", 
+                  digits = 1, 
+                  tol = 1,
+                  grid_shape = c(1,1), 
+                  max_depth = 8,
+                  agg = 5, #we aggregate events within a 5m radius (faster calculation)
+                  sparse = TRUE,
+                  verbose = FALSE)
+```
+
+Things to note and might be diff:
+kernel method and the bandwidth
+
+```{r}
+samples$density <- densities
+lixels$density <- densities
+```
+
+### Resale the density values from number of events per meter to number of events per kilometer
+
+As the svy21 projection system is in meters, the resulting density values are very small (e.g., 0.0000005). The code below employed to rescale the density values from the number of events per meter to the number of events per kilometer.
+
+```{r}
+# rescaling to help the mapping
+samples$density <- samples$density*1000
+lixels$density <- lixels$density*1000
+```
+
+### Using tmap package to plot map after rescaling
+
+tmap packages can be used to prepare interactive and high cartographic quality map visualisation.
+
+```{r}
+tmap_mode('view')
+tm_shape(lixels)+
+  tm_lines(col="density")+
+tm_shape(childcare)+
+  tm_dots()
+```
+
+```{r}
+tmap_mode('plot')
+```
+
+

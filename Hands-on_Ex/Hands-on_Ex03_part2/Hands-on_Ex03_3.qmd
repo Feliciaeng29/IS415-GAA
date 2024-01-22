@@ -123,7 +123,11 @@ plot(network)
 plot(childcare,add=T,col='red',pch = 19)
 ```
 
-For achieving a visually appealing and interactive representation of geospatial data, the tmap package's mapping function can be employed
+For achieving a visually appealing and interactive representation of geospatial data, the tmap package's mapping function can be employed.
+
+View: interactive
+
+Plot: Static
 
 ```{r}
 tmap_mode('view')

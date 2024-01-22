@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2024-01-01">
 
 <title>IS415-GAA - Take home Exercise 1: Application of Spatial Point Patterns Analysis to discover the geographical distribution of Grab hailing services in Singapore</title>
 <style>
@@ -156,8 +157,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="dropdown-text">In-class Exercise 2</span></a>
   </li>  
         <li>
-    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex03/In-class_Ex03.html" rel="" target="">
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex03/In-class_Ex03_1.html" rel="" target="">
  <span class="dropdown-text">In-class Exercise 3</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="../../In-class_Ex/In-class_Ex03_NKDE/In-class_Ex03_NKDE.html" rel="" target="">
+ <span class="dropdown-text">In-class Exercise 3-NKDE</span></a>
   </li>  
     </ul>
   </li>
@@ -167,7 +172,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </a>
     <ul class="dropdown-menu" aria-labelledby="nav-menu-take-home-exercise">    
         <li>
-    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html" rel="" target="">
+    <a class="dropdown-item" href="../../Take-home_Ex/Take-home_Ex01/Take-home_Ex02.html" rel="" target="">
  <span class="dropdown-text">Take-home Exercise 1</span></a>
   </li>  
     </ul>
@@ -200,17 +205,47 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#objectives" id="toc-objectives" class="nav-link active" data-scroll-target="#objectives"><strong>Objectives</strong></a></li>
   <li><a href="#the-task" id="toc-the-task" class="nav-link" data-scroll-target="#the-task"><strong>The Task</strong></a></li>
-  <li><a href="#loading-r-packages" id="toc-loading-r-packages" class="nav-link" data-scroll-target="#loading-r-packages">Loading R packages</a></li>
-  <li><a href="#importing-grab-posisi-dataset" id="toc-importing-grab-posisi-dataset" class="nav-link" data-scroll-target="#importing-grab-posisi-dataset">Importing Grab-Posisi Dataset</a>
+  <li><a href="#import-r-packages" id="toc-import-r-packages" class="nav-link" data-scroll-target="#import-r-packages"><strong>1. Import R packages</strong></a></li>
+  <li><a href="#the-data" id="toc-the-data" class="nav-link" data-scroll-target="#the-data"><strong>2. The Data</strong></a>
   <ul class="collapse">
-  <li><a href="#preparing-data-for-grab" id="toc-preparing-data-for-grab" class="nav-link" data-scroll-target="#preparing-data-for-grab">Preparing data for Grab</a></li>
-  <li><a href="#converting-data-type-of-pingtimestamp-from-character-to-date-time" id="toc-converting-data-type-of-pingtimestamp-from-character-to-date-time" class="nav-link" data-scroll-target="#converting-data-type-of-pingtimestamp-from-character-to-date-time">Converting data type of pingtimestamp from character to date-time</a></li>
-  <li><a href="#reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds." id="toc-reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds." class="nav-link" data-scroll-target="#reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds.">Reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.</a></li>
+  <li><a href="#apstial-data" id="toc-apstial-data" class="nav-link" data-scroll-target="#apstial-data"><strong>Apstial data</strong></a></li>
+  <li><a href="#geospatial-data" id="toc-geospatial-data" class="nav-link" data-scroll-target="#geospatial-data"><strong>Geospatial data</strong></a></li>
   </ul></li>
+  <li><a href="#data-preprocessing" id="toc-data-preprocessing" class="nav-link" data-scroll-target="#data-preprocessing"><strong>3. Data preprocessing</strong></a>
+  <ul class="collapse">
+  <li><a href="#importing-aspatial-data" id="toc-importing-aspatial-data" class="nav-link" data-scroll-target="#importing-aspatial-data">3.1 Importing Aspatial Data</a>
+  <ul class="collapse">
+  <li><a href="#importing-grab-posisi-dataset" id="toc-importing-grab-posisi-dataset" class="nav-link" data-scroll-target="#importing-grab-posisi-dataset">Importing Grab-Posisi Dataset</a></li>
+  </ul></li>
+  <li><a href="#importing-geospatial-data" id="toc-importing-geospatial-data" class="nav-link" data-scroll-target="#importing-geospatial-data">3.2 Importing Geospatial data</a>
+  <ul class="collapse">
   <li><a href="#importing-data-for-road-data-from-openstreetmap" id="toc-importing-data-for-road-data-from-openstreetmap" class="nav-link" data-scroll-target="#importing-data-for-road-data-from-openstreetmap">Importing data for Road data from OpenStreetMap</a></li>
-  <li><a href="#importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg." id="toc-importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg." class="nav-link" data-scroll-target="#importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg.">Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.</a>
+  <li><a href="#importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg." id="toc-importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg." class="nav-link" data-scroll-target="#importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg.">Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#data-preprocessing-1" id="toc-data-preprocessing-1" class="nav-link" data-scroll-target="#data-preprocessing-1"><strong>4. Data Preprocessing</strong></a>
+  <ul class="collapse">
+  <li><a href="#aspatial-data" id="toc-aspatial-data" class="nav-link" data-scroll-target="#aspatial-data">Aspatial Data</a>
+  <ul class="collapse">
+  <li><a href="#convert-aspatial-to-geospatial" id="toc-convert-aspatial-to-geospatial" class="nav-link" data-scroll-target="#convert-aspatial-to-geospatial">Convert Aspatial to Geospatial</a></li>
+  </ul></li>
+  <li><a href="#project-transformation" id="toc-project-transformation" class="nav-link" data-scroll-target="#project-transformation">4.2 Project Transformation</a>
   <ul class="collapse">
   <li><a href="#transforming-the-projection-from-wgs84-to-svy21" id="toc-transforming-the-projection-from-wgs84-to-svy21" class="nav-link" data-scroll-target="#transforming-the-projection-from-wgs84-to-svy21">Transforming the projection from wgs84 to svy21</a></li>
+  </ul></li>
+  </ul></li>
+  <li><a href="#data-cleaning" id="toc-data-cleaning" class="nav-link" data-scroll-target="#data-cleaning"><strong>5. Data Cleaning</strong></a>
+  <ul class="collapse">
+  <li><a href="#selecting-the-relevant-information" id="toc-selecting-the-relevant-information" class="nav-link" data-scroll-target="#selecting-the-relevant-information">5.1 # Selecting the relevant information</a></li>
+  <li><a href="#converting-data-type-of-pingtimestamp-from-character-to-date-time" id="toc-converting-data-type-of-pingtimestamp-from-character-to-date-time" class="nav-link" data-scroll-target="#converting-data-type-of-pingtimestamp-from-character-to-date-time">Converting data type of pingtimestamp from character to date-time</a></li>
+  <li><a href="#reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds." id="toc-reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds." class="nav-link" data-scroll-target="#reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds.">Reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.</a></li>
+  <li><a href="#check-and-remove-duplicates" id="toc-check-and-remove-duplicates" class="nav-link" data-scroll-target="#check-and-remove-duplicates">5.2 Check and remove duplicates</a></li>
+  <li><a href="#converting-sf-data-frame-to-spatstat-objects" id="toc-converting-sf-data-frame-to-spatstat-objects" class="nav-link" data-scroll-target="#converting-sf-data-frame-to-spatstat-objects">Converting sf data frame to spatstat objects</a></li>
+  </ul></li>
+  <li><a href="#data-wrangling" id="toc-data-wrangling" class="nav-link" data-scroll-target="#data-wrangling"><strong>6. Data Wrangling</strong></a></li>
+  <li><a href="#exploratory-spatial-data-analysis" id="toc-exploratory-spatial-data-analysis" class="nav-link" data-scroll-target="#exploratory-spatial-data-analysis"><strong>7. Exploratory Spatial Data Analysis</strong></a>
+  <ul class="collapse">
+  <li><a href="#derive-kernel-density-maps" id="toc-derive-kernel-density-maps" class="nav-link" data-scroll-target="#derive-kernel-density-maps">Derive Kernel Density Maps</a></li>
   </ul></li>
   <li><a href="#task-1-grab-taxi-location-points-either-by-origins-or-destinations." id="toc-task-1-grab-taxi-location-points-either-by-origins-or-destinations." class="nav-link" data-scroll-target="#task-1-grab-taxi-location-points-either-by-origins-or-destinations.">Task 1: Grab taxi location points either by origins or destinations.</a>
   <ul class="collapse">
@@ -233,7 +268,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 1, 2024</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">January 23, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -261,19 +308,38 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <li><p>Describe the spatial patterns revealed by the kernel density maps.</p></li>
 </ul>
 </section>
-<section id="loading-r-packages" class="level1">
-<h1>Loading R packages</h1>
+<section id="import-r-packages" class="level1">
+<h1><strong>1. Import R packages</strong></h1>
+<p>Explain what are the different R packages used</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(arrow, lubridate, tidyverse, sf, tmap)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="importing-grab-posisi-dataset" class="level1">
-<h1>Importing Grab-Posisi Dataset</h1>
+<section id="the-data" class="level1">
+<h1><strong>2. The Data</strong></h1>
+<section id="apstial-data" class="level3">
+<h3 class="anchored" data-anchor-id="apstial-data"><strong>Apstial data</strong></h3>
+<p>For the purpose of this assignment, <a href="https://engineering.grab.com/grab-posisi">Grab-Posisi</a> of Singapore will be used.</p>
+</section>
+<section id="geospatial-data" class="level3">
+<h3 class="anchored" data-anchor-id="geospatial-data"><strong>Geospatial data</strong></h3>
+<ul>
+<li><p>Road data set from OpenStreetMap of <a href="https://download.geofabrik.de/">Geofabrik download server</a>. The Malaysia, Singapore, and Brunei coverage should be downloaded.</p></li>
+<li><p>Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.</p></li>
+</ul>
+</section>
+</section>
+<section id="data-preprocessing" class="level1">
+<h1><strong>3. Data preprocessing</strong></h1>
+<section id="importing-aspatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="importing-aspatial-data">3.1 Importing Aspatial Data</h2>
+<section id="importing-grab-posisi-dataset" class="level3">
+<h3 class="anchored" data-anchor-id="importing-grab-posisi-dataset">Importing Grab-Posisi Dataset</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>grab <span class="ot">&lt;-</span> <span class="fu">read_parquet</span>(<span class="st">"data/apstial/GrabPosisi/part-00000.parquet"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<section id="preparing-data-for-grab" class="level2">
-<h2 class="anchored" data-anchor-id="preparing-data-for-grab">Preparing data for Grab</h2>
+<section id="preparing-data-for-grab" class="level4">
+<h4 class="anchored" data-anchor-id="preparing-data-for-grab">Preparing data for Grab</h4>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(grab)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -291,26 +357,17 @@ $ accuracy      &lt;dbl&gt; 3.900, 4.000, 3.900, 4.000, 3.900, 3.900, 3.000, 3.6
 </div>
 </div>
 </section>
-<section id="converting-data-type-of-pingtimestamp-from-character-to-date-time" class="level2">
-<h2 class="anchored" data-anchor-id="converting-data-type-of-pingtimestamp-from-character-to-date-time">Converting data type of pingtimestamp from character to date-time</h2>
+</section>
+</section>
+<section id="importing-geospatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="importing-geospatial-data">3.2 Importing Geospatial data</h2>
+<section id="importing-data-for-road-data-from-openstreetmap" class="level3">
+<h3 class="anchored" data-anchor-id="importing-data-for-road-data-from-openstreetmap">Importing data for Road data from OpenStreetMap</h3>
+</section>
+<section id="importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg." class="level3">
+<h3 class="anchored" data-anchor-id="importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg.">Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>grab<span class="sc">$</span>pingtimestamp <span class="ot">&lt;-</span> <span class="fu">as_datetime</span>(grab<span class="sc">$</span>pingtimestamp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds." class="level2">
-<h2 class="anchored" data-anchor-id="reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds.">Reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.</h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(df, <span class="st">"data/rds/part0.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-</section>
-<section id="importing-data-for-road-data-from-openstreetmap" class="level1">
-<h1>Importing data for Road data from OpenStreetMap</h1>
-</section>
-<section id="importing-master-plan-2019-subzone-boundary-no-sea-from-data.gov.sg." class="level1">
-<h1>Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.</h1>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">=</span> <span class="fu">st_read</span>(<span class="st">"data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">=</span> <span class="fu">st_read</span>(<span class="st">"data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `URA_MP19_SUBZONE_NO_SEA_PL' from data source 
   `C:\Feliciaeng29\IS415-GAA\Take-home_Ex\Take-home_Ex01\data\geospatial\MasterPlan2019SubzoneBoundaryNoSeaKML.kml' 
@@ -323,224 +380,74 @@ z_range:       zmin: 0 zmax: 0
 Geodetic CRS:  WGS 84</code></pre>
 </div>
 </div>
-<section id="transforming-the-projection-from-wgs84-to-svy21" class="level2">
-<h2 class="anchored" data-anchor-id="transforming-the-projection-from-wgs84-to-svy21">Transforming the projection from wgs84 to svy21</h2>
+<section id="preparing-data-for-grab-1" class="level4">
+<h4 class="anchored" data-anchor-id="preparing-data-for-grab-1">Preparing data for Grab</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(mpsz)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 332
+Columns: 3
+$ Name        &lt;chr&gt; "kml_1", "kml_2", "kml_3", "kml_4", "kml_5", "kml_6", "kml…
+$ Description &lt;chr&gt; "&lt;center&gt;&lt;table&gt;&lt;tr&gt;&lt;th colspan='2' align='center'&gt;&lt;em&gt;Att…
+$ geometry    &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON Z (((103.8145 ..., MULTIPOLYGON …</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+</section>
+<section id="data-preprocessing-1" class="level1">
+<h1><strong>4. Data Preprocessing</strong></h1>
+<section id="aspatial-data" class="level2">
+<h2 class="anchored" data-anchor-id="aspatial-data">Aspatial Data</h2>
+<section id="convert-aspatial-to-geospatial" class="level3">
+<h3 class="anchored" data-anchor-id="convert-aspatial-to-geospatial">Convert Aspatial to Geospatial</h3>
+<p>To ask: ***double check if this step is necessary</p>
+</section>
+</section>
+<section id="project-transformation" class="level2">
+<h2 class="anchored" data-anchor-id="project-transformation">4.2 Project Transformation</h2>
+<section id="transforming-the-projection-from-wgs84-to-svy21" class="level3">
+<h3 class="anchored" data-anchor-id="transforming-the-projection-from-wgs84-to-svy21">Transforming the projection from wgs84 to svy21</h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">&lt;-</span> <span class="fu">st_transform</span>(mpsz,</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>                     <span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
+</section>
+</section>
+</section>
+<section id="data-cleaning" class="level1">
+<h1><strong>5. Data Cleaning</strong></h1>
+<section id="selecting-the-relevant-information" class="level2">
+<h2 class="anchored" data-anchor-id="selecting-the-relevant-information">5.1 # Selecting the relevant information</h2>
+<p>Explain the reason why as well</p>
+</section>
+<section id="converting-data-type-of-pingtimestamp-from-character-to-date-time" class="level2">
+<h2 class="anchored" data-anchor-id="converting-data-type-of-pingtimestamp-from-character-to-date-time">Converting data type of pingtimestamp from character to date-time</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>grab<span class="sc">$</span>pingtimestamp <span class="ot">&lt;-</span> <span class="fu">as_datetime</span>(grab<span class="sc">$</span>pingtimestamp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
+</section>
+<section id="reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds." class="level2">
+<h2 class="anchored" data-anchor-id="reformatted-df-into-a-new-rds-file-called-part0.rds.-save-the-output-into-a-sub-folder-call-rds.">Reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(df, <span class="st">"data/rds/part0.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 4 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 5 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 4 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 5 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 6 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 7 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 4 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 5 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 6 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 7 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 8 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 4 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 5 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 6 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 7 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 3 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 0 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 1 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_transform(x, crs, aoi, pipeline, reverse, desired_accuracy, :
-GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</code></pre>
-</div>
-</div>
+</section>
+<section id="check-and-remove-duplicates" class="level2">
+<h2 class="anchored" data-anchor-id="check-and-remove-duplicates">5.2 Check and remove duplicates</h2>
+</section>
+<section id="converting-sf-data-frame-to-spatstat-objects" class="level2">
+<h2 class="anchored" data-anchor-id="converting-sf-data-frame-to-spatstat-objects">Converting sf data frame to spatstat objects</h2>
+</section>
+</section>
+<section id="data-wrangling" class="level1">
+<h1><strong>6. Data Wrangling</strong></h1>
+</section>
+<section id="exploratory-spatial-data-analysis" class="level1">
+<h1><strong>7. Exploratory Spatial Data Analysis</strong></h1>
+<section id="derive-kernel-density-maps" class="level2">
+<h2 class="anchored" data-anchor-id="derive-kernel-density-maps">Derive Kernel Density Maps</h2>
 </section>
 </section>
 <section id="task-1-grab-taxi-location-points-either-by-origins-or-destinations." class="level1">
@@ -548,29 +455,29 @@ GDAL Message 1: Sub-geometry 2 has coordinate dimension 2, but container has 3</
 <section id="extracting-trips-origin-locations" class="level2">
 <h2 class="anchored" data-anchor-id="extracting-trips-origin-locations">1.1 Extracting trips’ origin locations</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>origin_df <span class="ot">&lt;-</span> grab <span class="sc">%&gt;%</span> </span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trj_id) <span class="sc">%&gt;%</span> </span>
-<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(pingtimestamp) <span class="sc">%&gt;%</span> </span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">weekday =</span> <span class="fu">wday</span>(pingtimestamp,</span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">label=</span><span class="cn">TRUE</span>,</span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">abbr=</span><span class="cn">TRUE</span>),</span>
-<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">start_hr =</span> <span class="fu">factor</span>(<span class="fu">hour</span>(pingtimestamp)),</span>
-<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">day =</span> <span class="fu">factor</span>(<span class="fu">mday</span>(pingtimestamp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>origin_df <span class="ot">&lt;-</span> grab <span class="sc">%&gt;%</span> </span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trj_id) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(pingtimestamp) <span class="sc">%&gt;%</span> </span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">weekday =</span> <span class="fu">wday</span>(pingtimestamp,</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">label=</span><span class="cn">TRUE</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">abbr=</span><span class="cn">TRUE</span>),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">start_hr =</span> <span class="fu">factor</span>(<span class="fu">hour</span>(pingtimestamp)),</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">day =</span> <span class="fu">factor</span>(<span class="fu">mday</span>(pingtimestamp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="extracting-trips-destination-locations" class="level2">
 <h2 class="anchored" data-anchor-id="extracting-trips-destination-locations">1.2 Extracting trips’ destination locations</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a>destination_df <span class="ot">&lt;-</span> grab <span class="sc">%&gt;%</span></span>
-<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trj_id) <span class="sc">%&gt;%</span></span>
-<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pingtimestamp)) <span class="sc">%&gt;%</span></span>
-<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">weekday =</span> <span class="fu">wday</span>(pingtimestamp,</span>
-<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">label=</span><span class="cn">TRUE</span>,</span>
-<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">abbr=</span><span class="cn">TRUE</span>),</span>
-<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">end_hr =</span> <span class="fu">factor</span>(<span class="fu">hour</span>(pingtimestamp)),</span>
-<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">day =</span> <span class="fu">factor</span>(<span class="fu">mday</span>(pingtimestamp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>destination_df <span class="ot">&lt;-</span> grab <span class="sc">%&gt;%</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(trj_id) <span class="sc">%&gt;%</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pingtimestamp)) <span class="sc">%&gt;%</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>()<span class="sc">==</span><span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">weekday =</span> <span class="fu">wday</span>(pingtimestamp,</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>                        <span class="at">label=</span><span class="cn">TRUE</span>,</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>                        <span class="at">abbr=</span><span class="cn">TRUE</span>),</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">end_hr =</span> <span class="fu">factor</span>(<span class="fu">hour</span>(pingtimestamp)),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">day =</span> <span class="fu">factor</span>(<span class="fu">mday</span>(pingtimestamp)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

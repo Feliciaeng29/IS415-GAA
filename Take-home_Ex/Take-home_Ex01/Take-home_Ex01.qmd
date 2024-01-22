@@ -1,5 +1,12 @@
 ---
 title: "Take home Exercise 1: Application of Spatial Point Patterns Analysis to discover the geographical distribution of Grab hailing services in Singapore"
+date: "January 2024"
+date-modified: "`r Sys.Date()`"
+execute: 
+  echo: true
+  eval: true
+  warning: false
+editor: visual
 ---
 
 rmb always check for duplicates
@@ -28,22 +35,92 @@ The specific tasks of this take-home exercise are as follows:
 
 -   Describe the spatial patterns revealed by the kernel density maps.
 
-# Loading R packages
+# **1. Import R packages**
+
+Explain what are the different R packages used
 
 ```{r}
 pacman::p_load(arrow, lubridate, tidyverse, sf, tmap)
 ```
 
-# Importing Grab-Posisi Dataset
+# **2. The Data**
+
+### **Apstial data**
+
+For the purpose of this assignment, [Grab-Posisi](https://engineering.grab.com/grab-posisi) of Singapore will be used.
+
+### **Geospatial data**
+
+-   Road data set from OpenStreetMap of [Geofabrik download server](https://download.geofabrik.de/). The Malaysia, Singapore, and Brunei coverage should be downloaded.
+
+-   Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
+
+# **3. Data preprocessing**
+
+## 3.1 Importing Aspatial Data
+
+### Importing Grab-Posisi Dataset
 
 ```{r}
 grab <- read_parquet("data/apstial/GrabPosisi/part-00000.parquet")
 ```
 
-## Preparing data for Grab
+#### Preparing data for Grab
 
 ```{r}
 glimpse(grab)
+```
+
+## 3.2 Importing Geospatial data
+
+### Importing data for Road data from OpenStreetMap
+
+```{r}
+
+```
+
+### Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
+
+```{r}
+mpsz = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+```
+
+#### Preparing data for Grab
+
+```{r}
+glimpse(mpsz)
+```
+
+
+# **4. Data Preprocessing**
+
+## Aspatial Data
+
+### Convert Aspatial to Geospatial
+
+To ask: ***double check if this step is necessary
+
+```{r}
+
+```
+
+## 4.2 Project Transformation
+
+### Transforming the projection from wgs84 to svy21
+
+```{r}
+mpsz <- st_transform(mpsz,
+                     crs = 3414)
+```
+
+# **5. Data Cleaning**
+
+## 5.1 \# Selecting the relevant information
+
+Explain the reason why as well
+
+```{r}
+
 ```
 
 ## Converting data type of pingtimestamp from character to date-time
@@ -58,24 +135,27 @@ grab$pingtimestamp <- as_datetime(grab$pingtimestamp)
 write_rds(df, "data/rds/part0.rds")
 ```
 
-# Importing data for Road data from OpenStreetMap
+## 5.2 Check and remove duplicates
 
 ```{r}
 
 ```
 
-# Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
+## Converting sf data frame to spatstat objects
 
 ```{r}
-mpsz = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+
 ```
 
-## Transforming the projection from wgs84 to svy21
+# **6. Data Wrangling**
 
 ```{r}
-mpsz <- st_transform(mpsz,
-                     crs = 3414)
+
 ```
+
+# **7. Exploratory Spatial Data Analysis**
+
+## Derive Kernel Density Maps
 
 # Task 1: Grab taxi location points either by origins or destinations.
 

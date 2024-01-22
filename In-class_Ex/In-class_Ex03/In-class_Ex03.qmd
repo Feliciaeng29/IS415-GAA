@@ -1,0 +1,12 @@
+---
+title: "In class Exercise 3"
+---
+
+# packages used
+
+```{r}
+pacman::p_load(tidyverse, sf, maptools, raster,spatstat, tmap)
+```
+
+# Data used
+

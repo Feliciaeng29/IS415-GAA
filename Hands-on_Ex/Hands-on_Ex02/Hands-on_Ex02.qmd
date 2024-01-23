@@ -5,6 +5,22 @@ categories: ["Hands-on Exercise", "tidyverse", "sf", "tmap"]
 
 # 2.2 Getting Started
 
+> **The R packages we’ll be introducing today are:**
+>
+> -   **tmap**: used for creating thematic maps, such as choropleth and bubble maps
+>
+> [In addition, the packages from our last lesson:]{.underline}
+>
+> -   **sf**: used for importing, managing, and processing geospatial data (handling geospatial)
+>
+> -   **tidyverse**: used for importing, wrangling and visualising data (tidying data)
+>
+> -   **dplyr**: wrangling data
+>
+> -   **readr**: importing delimited text file
+>
+> Among the four packages, **readr**, **tidyr** and **dplyr** are part of **tidyverse** package.
+
 To load the 4 packages that we will be using readr, tidyr and dplyr and sf packages.
 
 ```{r}

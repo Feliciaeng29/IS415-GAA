@@ -3,6 +3,9 @@ title: "IS415-GAA"
 
 listing:
   contents: 
+    - "In-class_Ex/In-class_Ex03_NKDE/In-class_Ex03_NKDE.qmd"
+    - "In-class_Ex/In-class_Ex03/In-class_Ex03_1.qmd"
+    - "In-class_Ex/In-class_Ex02/In-class_Ex02.qmd"
     - "Hands-on_Ex/Hands-on_Ex03_part2/Hands-on_Ex03_3.qmd"
     - "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03_2.qmd"
     - "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03_1.qmd"
@@ -21,3 +24,7 @@ html:
 Welcome to **Felicia's IS415 Geospatial Analytics and Applications**
 
 ![](images/Totoro-main-2.gif){fig-align="center"}
+
+> **Latest update**: *In the progress of revamping the website and adding personal notes in all the exercises* ⚒️
+
+**`Note to self`**`: Hand in there! 💪`

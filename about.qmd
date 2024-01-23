@@ -2,8 +2,14 @@
 title: "About"
 ---
 
-About this site
+![](images/studioghibli.gif){fig-align="center"}
 
-```{r}
-1 + 1
-```
+Hi there! I am Felicia currently a Year 3 computer science student.
+
+> Did you know? I have a deep appreciation for Studio Ghibli movies—they never fail to captivate me. In addition to my love for these, I find solace in the realms of books and the strokes of a paintbrush during my leisure hours.
+
+![](images/painting.gif){fig-align="center"}
+
+😀[For more information about me:]{.underline}
+
+Linkedin: <https://www.linkedin.com/in/felicia-eng-483b75162/>

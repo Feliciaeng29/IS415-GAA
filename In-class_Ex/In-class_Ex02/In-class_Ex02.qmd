@@ -1,5 +1,6 @@
 ---
 title: "In class Exercise 2: R for Geospatial Data Science"
+categories: ["In-class_Exercise", "tidyverse", "sf", "tmap"]
 format:
   html:
     toc-depth: 4

@@ -37,7 +37,17 @@ The specific tasks of this take-home exercise are as follows:
 
 # **1. Import R packages**
 
-Explain what are the different R packages used
+The different R packages used:
+
+-   [arrow](https://arrow.apache.org/docs/r/) exposes an interface to the Arrow C++ library, enabling access to many of its features in R. For this in-class exercise, arrow will be used to read Parquet files into R environment.
+
+-   [lubridate](https://lubridate.tidyverse.org/), a member of tidyverse family. Lubridate makes it easier to do the things R does with date-times and possible to do the things R does not. If you are new to lubridate, the best place to start is the [Date and times](https://r4ds.hadley.nz/datetimes) chapter in R for data science.
+
+-   [tidyverse](https://www.tidyverse.org/), a family of R packages for doing Data Science work based on tidy framework,
+
+-   [tmap](https://r-tmap.github.io/tmap/), an R package specially designed for plotting cartographical quality maps based on Layered Gremmar of Graphics.
+
+-   [sf](https://r-spatial.github.io/sf/), an package that provides simple features access for R.
 
 ```{r}
 pacman::p_load(arrow, lubridate, tidyverse, sf, tmap)
@@ -47,7 +57,7 @@ pacman::p_load(arrow, lubridate, tidyverse, sf, tmap)
 
 ### **Apstial data**
 
-For the purpose of this assignment, [Grab-Posisi](https://engineering.grab.com/grab-posisi) of Singapore will be used.
+-   For the purpose of this assignment, [Grab-Posisi](https://engineering.grab.com/grab-posisi) of Singapore will be used.
 
 ### **Geospatial data**
 
@@ -61,22 +71,48 @@ For the purpose of this assignment, [Grab-Posisi](https://engineering.grab.com/g
 
 ### Importing Grab-Posisi Dataset
 
+In this case we use **arrow** package *`read_parquet()`* function to import the following dataset.
+
 ```{r}
 grab <- read_parquet("data/apstial/GrabPosisi/part-00000.parquet")
 ```
 
-#### Preparing data for Grab
+Now we will use glimpse() of dplyr package is used to display the structure of df tibble data.frame.
 
 ```{r}
 glimpse(grab)
 ```
 
+Notice that pingtimestamp is in wrong data type format. It should be in date/ time format and not integer.
+
 ## 3.2 Importing Geospatial data
 
 ### Importing data for Road data from OpenStreetMap
 
+In this case we will only be using road data??
+** To ask if we need road data or Bus or Mrt Only???
+
+```{r}
+road <- st_read(dsn = "data/geospatial", layer = "gis_osm_roads_free_1")
+```
+
+#### Selecting and cleaning relevant information
+
+For more example:
+https://jenpoer-is415-gaa-exercises.netlify.app/take-home-exercises/exe-01/the1
+
 ```{r}
 
+```
+
+Explain the reason why as well might need to filter the openstreet map data to only Singapore
+
+```{r}
+
+```
+
+```{r}
+glimpse(road)
 ```
 
 ### Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
@@ -85,77 +121,25 @@ glimpse(grab)
 mpsz = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
 ```
 
-#### Preparing data for Grab
-
 ```{r}
 glimpse(mpsz)
 ```
 
+# Data preparation
 
-# **4. Data Preprocessing**
+## Converting data type to date/time format
 
-## Aspatial Data
-
-### Convert Aspatial to Geospatial
-
-To ask: ***double check if this step is necessary
-
-```{r}
-
-```
-
-## 4.2 Project Transformation
-
-### Transforming the projection from wgs84 to svy21
-
-```{r}
-mpsz <- st_transform(mpsz,
-                     crs = 3414)
-```
-
-# **5. Data Cleaning**
-
-## 5.1 \# Selecting the relevant information
-
-Explain the reason why as well
-
-```{r}
-
-```
-
-## Converting data type of pingtimestamp from character to date-time
+Since pingtimestamp is in wrong data type format, we need to convert the data type of pingtimestamp from character to date-time.
 
 ```{r}
 grab$pingtimestamp <- as_datetime(grab$pingtimestamp)
 ```
 
-## Reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.
+Save the tidy data.frame into rds format for subsequent use. Save the reformatted df into a new rds file called part0.rds. Save the output into a sub-folder call rds.
 
 ```{r}
-write_rds(df, "data/rds/part0.rds")
+write_rds(grab, "data/rds/part0.rds")
 ```
-
-## 5.2 Check and remove duplicates
-
-```{r}
-
-```
-
-## Converting sf data frame to spatstat objects
-
-```{r}
-
-```
-
-# **6. Data Wrangling**
-
-```{r}
-
-```
-
-# **7. Exploratory Spatial Data Analysis**
-
-## Derive Kernel Density Maps
 
 # Task 1: Grab taxi location points either by origins or destinations.
 
@@ -186,3 +170,269 @@ destination_df <- grab %>%
          end_hr = factor(hour(pingtimestamp)),
          day = factor(mday(pingtimestamp)))
 ```
+
+Saving data from future use
+
+```{r}
+write_rds(origin_df, "data/rds/origin_df.rds")
+write_rds(destination_df, "data/rds/destination_df.rds")
+```
+
+### Importing the origin and destination data
+
+```{r}
+origin_df <- read_rds("data/rds/origin_df.rds")
+destination_df <- read_rds("data/rds/destination_df.rds")
+```
+
+# **4. Data Preprocessing**
+
+## Aspatial Data
+
+### Convert Aspatial to Geospatial for GrabPosisi
+
+Convert origin_df into an sf tibble data.frame by using it’s location information.
+
+```{r}
+origin_sf <- st_as_sf(origin_df,
+                      coords = c("rawlng", "rawlat"),
+                      crs = 4326) %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+destination_sf <- st_as_sf(destination_df,
+                      coords = c("rawlng", "rawlat"),
+                      crs = 4326) %>%
+  st_transform(crs = 3414)
+```
+
+### Visualising the data for Origin and Destination
+
+#### Visualising frequency distribution
+
+Use ggplot functions are used to reveal the distribution of origin trips by day of the week.
+
+```{r}
+ggplot(data=origin_df, 
+       aes(x=weekday)) + 
+  geom_bar()
+```
+
+```{r}
+ggplot(data=destination_df, 
+       aes(x=weekday)) + 
+  geom_bar()
+```
+
+#### Visualising as Point Symbol Map
+
+```{r}
+tmap_mode("plot")
+tm_shape(origin_sf) +
+  tm_dots()
+```
+
+```{r}
+tmap_mode("plot")
+tm_shape(destination_sf) +
+  tm_dots()
+```
+
+## 4.2 Project Transformation
+
+First we can check the content of a simple feature data frame
+
+Using st_geometry() The column in the sf data.frame that contains the geometries is a list, of class sfc. We can retrieve the geometry list-column.
+
+```{r}
+st_geometry(mpsz)
+```
+
+We can use this to double check if all the data is in projected coordinate system `WGS84`
+
+Using glimpse() to find the basic feature information
+
+```{r}
+glimpse(mpsz)
+```
+
+Now we would like to reveal complete information of a feature object using head() of Base R
+
+```{r}
+head(mpsz, n=5)
+```
+
+Now let's take visualise the geospatial feature using plot() function to know what we are looking at
+
+```{r}
+plot(mpsz)
+```
+
+Before, we proceed lets use double check and make sure that all the data are projected in the same projection system.
+
+We can do so using st_crs() function
+
+```{r}
+st_crs(origin_df)
+```
+
+```{r}
+st_crs(destination_df)
+```
+
+```{r}
+st_crs(grab)
+```
+
+```{r}
+st_crs(mpsz)
+```
+
+
+```{r}
+st_crs(road)
+```
+
+# Mapping the geospatial data sets
+
+After we check the geospatial data set, we can plot a map to show the spatial patterns
+
+tmap_mode("plot")
+tm_shape(origin_sf) +
+  tm_dots() +
+tmap_mode("plot")
+tm_shape(destination_sf) +
+  tm_dots() +
+tm_shape(mpsz) +
+  tm_polygons() +
+tm_shape(road)+
+  tm_lines()
+
+```{r}
+
+```
+
+# Geospatial Data Wrangling
+
+## Converting sf data frames to sp’s Spatial* class
+
+```{r}
+
+```
+
+Now, we will display the information about these 3 Spatial* class
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+## Converting the Spatial* class into generic sp format
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+## Converting the generic sp format into spatstat’s ppp format
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+Now let's plot and check the summary statistics
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+## Handling duplicated points
+
+```{r}
+
+```
+
+## Overcoming the duplicates problem
+
+### Jittering
+
+```{r}
+
+```
+
+## Creating an owin object
+
+```{r}
+
+```
+
+# Combining point events object and owin object
+
+```{r}
+
+```
+
+Now let's take a look at the output
+
+```{r}
+
+```
+
+# First-order Spatial Point Patterns Analysis
+
+## Kernel Density Estimation
+
+###  Computing kernel density estimation using automatic bandwidth selection method
+
+```{r}
+
+```
+
+### Working with different automatic Bandwidth methods
+
+```{r}
+
+```
+
+### Working with different kernel methods
+
+
+

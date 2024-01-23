@@ -1,9 +1,23 @@
 ---
 title: "IS415-GAA"
+
+listing:
+  contents: 
+    - "Hands-on_Ex/Hands-on_Ex03_part2/Hands-on_Ex03_3.qmd"
+    - "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03_2.qmd"
+    - "Hands-on_Ex/Hands-on_Ex03/Hands-on_Ex03_1.qmd"
+    - "Hands-on_Ex/Hands-on_Ex02/Hands-on_Ex02.qmd"
+    - "Hands-on_Ex/Hands-on_Ex01/Hands-on_Ex01.qmd"
+  type: default
+  categories: cloud
+  sort-ui: [title, date]
+  sort: date desc
+  filter-ui: true
+  fields: [image, date, title, description, author, reading-time]
+html:
+  page-layout: full
 ---
 
 Welcome to **Felicia's IS415 Geospatial Analytics and Applications**
-
-This is the course website of IS415 I study this term. You will find my course work on this website.
 
 ![](images/Totoro-main-2.gif){fig-align="center"}

@@ -1,5 +1,6 @@
 ---
 title: "Hands-on Exercise 1: Geospatial Data Wrangling with R"
+categories: ["Hands-on Exercise", "tidyverse", "sf", "ggplot2"]
 execute: 
   warning: false
 date: "`r Sys.Date()`"

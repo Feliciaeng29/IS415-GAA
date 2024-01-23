@@ -1,6 +1,6 @@
 ---
 title: "Hands-on Exercise 2: Thematic Mapping and GeoVisualisation with R"
-categories: ["Hands-on Exercise", "tidyverse", "sf", "tmap"]
+categories: ["Hands-on Exercise", "tidyverse", "sf", "tmap", "choropleth map", "distribution of dependency ratio"]
 ---
 
 # 2.2 Getting Started
@@ -211,11 +211,21 @@ qtm(mpsz_pop2020,
     fill = "DEPENDENCY")
 ```
 
-> Things to learn from the code chunk above:
+> [Things to learn:]{.underline}
 >
 > -   *tmap_mode()* with “plot” option is used to produce a static map. For interactive mode, “view” option should be used.
 >
 > -   *fill* argument is used to map the attribute (i.e. DEPENDENCY)
+
+> [Note to self:]{.underline}
+>
+> 1.  **`tmap_mode("plot")`**: Sets the plotting mode for **`tmap`** to "plot," indicating that the subsequent mapping operations will generate a plot.
+>
+> 2.  **`qtm(mpsz_pop2020, fill = "DEPENDENCY")`**: This line is responsible for creating the choropleth map.
+>
+>     -   **`mpsz_pop2020`**: Specifies the dataframe containing the spatial and attribute data for the map.
+>
+>     -   **`fill = "DEPENDENCY"`**: Specifies that the variable "DEPENDENCY" from the dataframe should be used to determine the fill color of the map.
 
 ## 2.4.2 Creating a choropleth map by using tmap's elements
 
@@ -241,11 +251,49 @@ tm_shape(mpsz_pop2020)+
              position = c("left", "bottom"))
 ```
 
+> Note to self:
+>
+> 1.  **`tm_shape(mpsz_pop2020)`**: Specifies the spatial object (**`mpsz_pop2020`**) that will be used as the base layer for the map.
+>
+> 2.  **`tm_fill("DEPENDENCY", style = "quantile", palette = "Blues", title = "Dependency ratio")`**: Defines the fill style of the map based on the "DEPENDENCY" variable.
+>
+>     -   **`style = "quantile"`**: Indicates that a quantile classification method should be used for the choropleth map.
+>
+>     -   **`palette = "Blues"`**: Specifies the color palette to be used for filling the map. In this case, it's the "Blues" palette.
+>
+>     -   **`title = "Dependency ratio"`**: Sets the title for the legend associated with the "DEPENDENCY" variable.
+>
+> 3.  **`tm_layout()`**: Configures the overall layout and appearance of the map.
+>
+>     -   **`main.title`**: Specifies the main title of the map.
+>
+>     -   **`main.title.position`**, **`main.title.size`**: Controls the position and size of the main title.
+>
+>     -   **`legend.height`**, **`legend.width`**: Sets the height and width of the legend.
+>
+>     -   **`frame = TRUE`**: Indicates that a frame should be added around the legend.
+>
+> 4.  **`tm_borders(alpha = 0.5)`**: Adds borders to the map with a specified level of transparency (**`alpha = 0.5`**).
+>
+> 5.  **`tm_compass(type="8star", size = 2)`**: Adds a compass to the map with a specified type ("8star") and size.
+>
+> 6.  **`tm_scale_bar()`**: Adds a scale bar to the map.
+>
+> 7.  **`tm_grid(alpha =0.2)`**: Adds a grid to the map with a specified level of transparency (**`alpha = 0.2`**).
+>
+> 8.  **`tm_credits()`**: Adds credits or a source attribution to the map.
+>
+>     -   **`"Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics DOS"`**: Specifies the source information.
+>
+>     -   **`position = c("left", "bottom")`**: Sets the position of the credits on the map.
+
 ### 2.4.2.1 Drawing a base map
 
-The basic building block of **tmap** is *tm_shape()* followed by one or more layer elemments such as *tm_fill()* and *tm_polygons()*.
+The basic building block of **tmap** is *`tm_shape()`* followed by one or more layer elemments such as *`tm_fill()`* and *`tm_polygons()`*.
 
-In the code chunk below, *tm_shape()* is used to define the input data (i.e *mpsz_pop2020*) and *tm_polygons()* is used to draw the planning subzone polygons
+-    *`tm_shape()`* is used to define the **input data** (i.e *mpsz_pop2020*)
+
+-   *`tm_polygons()`* is used to **draw the planning subzone polygons**
 
 ```{r}
 tm_shape(mpsz_pop2020) +
@@ -254,20 +302,20 @@ tm_shape(mpsz_pop2020) +
 
 ### 2.4.2.2 Drawing a choropleth map using tm_polygons()
 
-To draw a choropleth map showing the geographical distribution of a selected variable by planning subzone, we just need to assign the target variable such as Dependency to tm_polygons().
+To draw a choropleth map showing the geographical distribution of a selected variable by planning subzone, we just need to assign the target variable such as "DEPENDENCY" to *`tm_polygons()`*.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
   tm_polygons("DEPENDENCY")
 ```
 
-Things to learn from *tm_polygons()*:
-
--   The default interval binning used to draw the choropleth map is called “pretty”. A detailed discussion of the data classification methods supported by **tmap** will be provided in sub-section 4.3.
-
--   The default colour scheme used is `YlOrRd` of ColorBrewer. You will learn more about the color scheme in sub-section 4.4.
-
--   By default, Missing value will be shaded in grey.
+> [Things to learn from *tm_polygons()*:]{.underline}
+>
+> -   The default interval binning used to draw the choropleth map is called “pretty”. A detailed discussion of the data classification methods supported by **tmap** will be provided in sub-section 4.3.
+>
+> -   The default colour scheme used is `YlOrRd` of ColorBrewer. You will learn more about the color scheme in sub-section 4.4.
+>
+> -   By default, Missing value will be shaded in grey.
 
 ### 2.4.2.3 Drawing a choropleth map using tm_fill() and *tm_border()*
 
@@ -280,9 +328,13 @@ tm_shape(mpsz_pop2020)+
   tm_fill("DEPENDENCY")
 ```
 
-Notice that the planning subzones are shared according to the respective dependecy values
+Notice that the planning subzones are shared according to the respective dependecy values.
 
-To add the boundary of the planning subzones, tm_borders will be used as shown in the code chunk below.
+> Note to self:
+>
+> -    *tm_polygons()* is a wrapper of *tm_fill()* and *tm_border()*. *tm_fill()* shades the polygons(using the default colour scheme) while *tm_borders()* adds the borders of the shapefile onto the choropleth map.
+
+To **add the boundary** of the planning subzones, `tm_borders()` will be used.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -290,17 +342,17 @@ tm_shape(mpsz_pop2020)+
   tm_borders(lwd = 0.1,  alpha = 1)
 ```
 
-Notice that light-gray border lines have been added on the choropleth map.
-
-The *alpha* argument is used to define transparency number between 0 (totally transparent) and 1 (not transparent). By default, the alpha value of the col is used (normally 1).
-
-Beside *alpha* argument, there are three other arguments for *tm_borders()*, they are:
-
--   *col* = border colour,
-
--   *lwd* = border line width. The default is 1, and
-
--   *lty* = border line type. The default is “solid”.
+> Notice that light-gray border lines have been added on the choropleth map.
+>
+> The *alpha* argument is used to define transparency number between 0 (totally transparent) and 1 (not transparent). By default, the alpha value of the col is used (normally 1).
+>
+> Beside *alpha* argument, there are three other arguments for *tm_borders()*, they are:
+>
+> -   *col* = border colour,
+>
+> -   *lwd* = border line width. The default is 1, and
+>
+> -   *lty* = border line type. The default is “solid”.
 
 ## 2.4.3 Data Classification methods of tmap
 
@@ -312,7 +364,7 @@ To define a data classification method, the *style* argument of *tm_fill()* or *
 
 ### 2.4.3.1 Plotting choropleth maps with built-in classification methods
 
-This code below shows a quantile data classification that used 5 classes.
+This code below shows a *`quantile`* data classification that used 5 classes.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -322,7 +374,7 @@ tm_shape(mpsz_pop2020)+
   tm_borders(alpha = 0.5)
 ```
 
-This code below, *equal* data classification method is used.
+This code below, *`equal`* data classification method is used.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -334,15 +386,11 @@ tm_shape(mpsz_pop2020)+
 
 Notice that the distribution of quantile data classification method are more evenly distributed then equal data classification method.
 
-> **Warning: Maps Lie!**
-
-> DIY: Using what you had learned, prepare choropleth maps by using different classification methods supported by tmap and compare their differences.
-
-> DIY: Preparing choropleth maps by using similar classification method but with different numbers of classes (i.e. 2, 6, 10, 20). Compare the output maps, what observation can you draw?
-
 ### 2.4.3.2 Plotting choropleth map with custom break
 
-For all the built-in styles, the category breaks are computed internally. In order to override these defaults, the breakpoints can be set explicitly by means of the *breaks* argument to the *tm_fill()*. It is important to note that, in **tmap** the breaks include a minimum and maximum. As a result, in order to end up with n categories, n+1 elements must be specified in the *breaks* option (the values must be in increasing order).
+For all the built-in styles, the category breaks are computed internally. In order to override these defaults, the breakpoints can be set explicitly by means of the *breaks* argument to the *tm_fill()*.
+
+> *It is important to note that, in **tmap** the breaks include a minimum and maximum. As a result, in order to end up with n categories, n+1 elements must be specified in the breaks option (the values must be in increasing order).*
 
 Before we get started, it is always a good practice to get some descriptive statistics on the variable before setting the break points. Code chunk below will be used to compute and display the descriptive statistics of **DEPENDENCY** field.
 
@@ -367,7 +415,7 @@ tm_shape(mpsz_pop2020)+
 
 ### 2.4.4.1 Using ColourBrewer palette
 
-To change the colour, we assign the preferred colour to palette argument of tm_fill() as shown in the code chunk below.
+To change the colour, we assign the preferred colour to palette argument of *`tm_fill()`* as shown.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -380,7 +428,7 @@ tm_shape(mpsz_pop2020)+
 
 Notice that the choropleth map is shaded in green.
 
-To reverse the colour shading, add a “-” prefix.
+To reverse the colour shading, add a `“-” prefix`.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -398,7 +446,7 @@ Map layout refers to the combination of all map elements into a cohensive map. M
 
 ### 2.4.5.1 Map Legend
 
-In tmap, several legend options are provided to change the placement, format and appearance of the legend.
+In **tmap**, several legend options are provided to change the placement, format and appearance of the legend.
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -421,9 +469,9 @@ tm_shape(mpsz_pop2020)+
 
 ### 2.4.5.2 Map style
 
-**tmap** allows a wide variety of layout settings to be changed. They can be called by using *tmap_style()*.
+**tmap** allows a wide variety of layout settings to be changed. They can be called by using *`tmap_style()`*.
 
-The code chunk below shows the *classic* style is used.
+The code shows the *classic* style is used. `tmap_style("classic")`
 
 ```{r}
 tm_shape(mpsz_pop2020)+
@@ -480,7 +528,7 @@ In **tmap**, small multiple maps can be plotted in three ways:
 
 ### 2.4.6.1 By assigning values to at least one of the aesthetic arguments
 
-In this example, small multiple choropleth maps are created by defining ***ncols*** in **tm_fill()**
+Here small multiple choropleth maps are created by defining ***ncols*** in **tm_fill()**
 
 ```{r}
 tm_shape(mpsz_pop2020)+

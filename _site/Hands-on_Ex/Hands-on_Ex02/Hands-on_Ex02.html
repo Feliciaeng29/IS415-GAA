@@ -259,6 +259,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="quarto-category">tidyverse</div>
     <div class="quarto-category">sf</div>
     <div class="quarto-category">tmap</div>
+    <div class="quarto-category">choropleth map</div>
+    <div class="quarto-category">distribution of dependency ratio</div>
   </div>
   </div>
 
@@ -523,11 +525,22 @@ dbl (2): Pop, Time
 </div>
 </div>
 <blockquote class="blockquote">
-<p>Things to learn from the code chunk above:</p>
+<p><u>Things to learn:</u></p>
 <ul>
 <li><p><em>tmap_mode()</em> with “plot” option is used to produce a static map. For interactive mode, “view” option should be used.</p></li>
 <li><p><em>fill</em> argument is used to map the attribute (i.e.&nbsp;DEPENDENCY)</p></li>
 </ul>
+</blockquote>
+<blockquote class="blockquote">
+<p><u>Note to self:</u></p>
+<ol type="1">
+<li><p><strong><code>tmap_mode("plot")</code></strong>: Sets the plotting mode for <strong><code>tmap</code></strong> to “plot,” indicating that the subsequent mapping operations will generate a plot.</p></li>
+<li><p><strong><code>qtm(mpsz_pop2020, fill = "DEPENDENCY")</code></strong>: This line is responsible for creating the choropleth map.</p>
+<ul>
+<li><p><strong><code>mpsz_pop2020</code></strong>: Specifies the dataframe containing the spatial and attribute data for the map.</p></li>
+<li><p><strong><code>fill = "DEPENDENCY"</code></strong>: Specifies that the variable “DEPENDENCY” from the dataframe should be used to determine the fill color of the map.</p></li>
+</ul></li>
+</ol>
 </blockquote>
 </section>
 <section id="creating-a-choropleth-map-by-using-tmaps-elements" class="level2">
@@ -555,10 +568,41 @@ dbl (2): Pop, Time
 <p><img src="Hands-on_Ex02_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<blockquote class="blockquote">
+<p>Note to self:</p>
+<ol type="1">
+<li><p><strong><code>tm_shape(mpsz_pop2020)</code></strong>: Specifies the spatial object (<strong><code>mpsz_pop2020</code></strong>) that will be used as the base layer for the map.</p></li>
+<li><p><strong><code>tm_fill("DEPENDENCY", style = "quantile", palette = "Blues", title = "Dependency ratio")</code></strong>: Defines the fill style of the map based on the “DEPENDENCY” variable.</p>
+<ul>
+<li><p><strong><code>style = "quantile"</code></strong>: Indicates that a quantile classification method should be used for the choropleth map.</p></li>
+<li><p><strong><code>palette = "Blues"</code></strong>: Specifies the color palette to be used for filling the map. In this case, it’s the “Blues” palette.</p></li>
+<li><p><strong><code>title = "Dependency ratio"</code></strong>: Sets the title for the legend associated with the “DEPENDENCY” variable.</p></li>
+</ul></li>
+<li><p><strong><code>tm_layout()</code></strong>: Configures the overall layout and appearance of the map.</p>
+<ul>
+<li><p><strong><code>main.title</code></strong>: Specifies the main title of the map.</p></li>
+<li><p><strong><code>main.title.position</code></strong>, <strong><code>main.title.size</code></strong>: Controls the position and size of the main title.</p></li>
+<li><p><strong><code>legend.height</code></strong>, <strong><code>legend.width</code></strong>: Sets the height and width of the legend.</p></li>
+<li><p><strong><code>frame = TRUE</code></strong>: Indicates that a frame should be added around the legend.</p></li>
+</ul></li>
+<li><p><strong><code>tm_borders(alpha = 0.5)</code></strong>: Adds borders to the map with a specified level of transparency (<strong><code>alpha = 0.5</code></strong>).</p></li>
+<li><p><strong><code>tm_compass(type="8star", size = 2)</code></strong>: Adds a compass to the map with a specified type (“8star”) and size.</p></li>
+<li><p><strong><code>tm_scale_bar()</code></strong>: Adds a scale bar to the map.</p></li>
+<li><p><strong><code>tm_grid(alpha =0.2)</code></strong>: Adds a grid to the map with a specified level of transparency (<strong><code>alpha = 0.2</code></strong>).</p></li>
+<li><p><strong><code>tm_credits()</code></strong>: Adds credits or a source attribution to the map.</p>
+<ul>
+<li><p><strong><code>"Source: Planning Sub-zone boundary from Urban Redevelopment Authority (URA)\n and Population data from Department of Statistics DOS"</code></strong>: Specifies the source information.</p></li>
+<li><p><strong><code>position = c("left", "bottom")</code></strong>: Sets the position of the credits on the map.</p></li>
+</ul></li>
+</ol>
+</blockquote>
 <section id="drawing-a-base-map" class="level3">
 <h3 class="anchored" data-anchor-id="drawing-a-base-map">2.4.2.1 Drawing a base map</h3>
-<p>The basic building block of <strong>tmap</strong> is <em>tm_shape()</em> followed by one or more layer elemments such as <em>tm_fill()</em> and <em>tm_polygons()</em>.</p>
-<p>In the code chunk below, <em>tm_shape()</em> is used to define the input data (i.e <em>mpsz_pop2020</em>) and <em>tm_polygons()</em> is used to draw the planning subzone polygons</p>
+<p>The basic building block of <strong>tmap</strong> is <em><code>tm_shape()</code></em> followed by one or more layer elemments such as <em><code>tm_fill()</code></em> and <em><code>tm_polygons()</code></em>.</p>
+<ul>
+<li><p><em><code>tm_shape()</code></em> is used to define the <strong>input data</strong> (i.e <em>mpsz_pop2020</em>)</p></li>
+<li><p><em><code>tm_polygons()</code></em> is used to <strong>draw the planning subzone polygons</strong></p></li>
+</ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020) <span class="sc">+</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -569,7 +613,7 @@ dbl (2): Pop, Time
 </section>
 <section id="drawing-a-choropleth-map-using-tm_polygons" class="level3">
 <h3 class="anchored" data-anchor-id="drawing-a-choropleth-map-using-tm_polygons">2.4.2.2 Drawing a choropleth map using tm_polygons()</h3>
-<p>To draw a choropleth map showing the geographical distribution of a selected variable by planning subzone, we just need to assign the target variable such as Dependency to tm_polygons().</p>
+<p>To draw a choropleth map showing the geographical distribution of a selected variable by planning subzone, we just need to assign the target variable such as “DEPENDENCY” to <em><code>tm_polygons()</code></em>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="st">"DEPENDENCY"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -577,12 +621,14 @@ dbl (2): Pop, Time
 <p><img src="Hands-on_Ex02_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Things to learn from <em>tm_polygons()</em>:</p>
+<blockquote class="blockquote">
+<p><u>Things to learn from <em>tm_polygons()</em>:</u></p>
 <ul>
 <li><p>The default interval binning used to draw the choropleth map is called “pretty”. A detailed discussion of the data classification methods supported by <strong>tmap</strong> will be provided in sub-section 4.3.</p></li>
 <li><p>The default colour scheme used is <code>YlOrRd</code> of ColorBrewer. You will learn more about the color scheme in sub-section 4.4.</p></li>
 <li><p>By default, Missing value will be shaded in grey.</p></li>
 </ul>
+</blockquote>
 </section>
 <section id="drawing-a-choropleth-map-using-tm_fill-and-tm_border" class="level3">
 <h3 class="anchored" data-anchor-id="drawing-a-choropleth-map-using-tm_fill-and-tm_border">2.4.2.3 Drawing a choropleth map using tm_fill() and <em>tm_border()</em></h3>
@@ -595,8 +641,14 @@ dbl (2): Pop, Time
 <p><img src="Hands-on_Ex02_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>Notice that the planning subzones are shared according to the respective dependecy values</p>
-<p>To add the boundary of the planning subzones, tm_borders will be used as shown in the code chunk below.</p>
+<p>Notice that the planning subzones are shared according to the respective dependecy values.</p>
+<blockquote class="blockquote">
+<p>Note to self:</p>
+<ul>
+<li>&nbsp;<em>tm_polygons()</em>&nbsp;is a wrapper of&nbsp;<em>tm_fill()</em>&nbsp;and&nbsp;<em>tm_border()</em>.&nbsp;<em>tm_fill()</em>&nbsp;shades the polygons(using the default colour scheme) while&nbsp;<em>tm_borders()</em>&nbsp;adds the borders of the shapefile onto the choropleth map.</li>
+</ul>
+</blockquote>
+<p>To <strong>add the boundary</strong> of the planning subzones, <code>tm_borders()</code> will be used.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>) <span class="sc">+</span></span>
@@ -605,6 +657,7 @@ dbl (2): Pop, Time
 <p><img src="Hands-on_Ex02_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<blockquote class="blockquote">
 <p>Notice that light-gray border lines have been added on the choropleth map.</p>
 <p>The <em>alpha</em> argument is used to define transparency number between 0 (totally transparent) and 1 (not transparent). By default, the alpha value of the col is used (normally 1).</p>
 <p>Beside <em>alpha</em> argument, there are three other arguments for <em>tm_borders()</em>, they are:</p>
@@ -613,6 +666,7 @@ dbl (2): Pop, Time
 <li><p><em>lwd</em> = border line width. The default is 1, and</p></li>
 <li><p><em>lty</em> = border line type. The default is “solid”.</p></li>
 </ul>
+</blockquote>
 </section>
 </section>
 <section id="data-classification-methods-of-tmap" class="level2">
@@ -622,7 +676,7 @@ dbl (2): Pop, Time
 <p>To define a data classification method, the <em>style</em> argument of <em>tm_fill()</em> or <em>tm_polygons()</em> will be used.</p>
 <section id="plotting-choropleth-maps-with-built-in-classification-methods" class="level3">
 <h3 class="anchored" data-anchor-id="plotting-choropleth-maps-with-built-in-classification-methods">2.4.3.1 Plotting choropleth maps with built-in classification methods</h3>
-<p>This code below shows a quantile data classification that used 5 classes.</p>
+<p>This code below shows a <em><code>quantile</code></em> data classification that used 5 classes.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>,</span>
@@ -633,7 +687,7 @@ dbl (2): Pop, Time
 <p><img src="Hands-on_Ex02_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>This code below, <em>equal</em>&nbsp;data classification method is used.</p>
+<p>This code below, <em><code>equal</code></em>&nbsp;data classification method is used.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>,</span>
@@ -645,19 +699,13 @@ dbl (2): Pop, Time
 </div>
 </div>
 <p>Notice that the distribution of quantile data classification method are more evenly distributed then equal data classification method.</p>
-<blockquote class="blockquote">
-<p><strong>Warning: Maps Lie!</strong></p>
-</blockquote>
-<blockquote class="blockquote">
-<p>DIY: Using what you had learned, prepare choropleth maps by using different classification methods supported by tmap and compare their differences.</p>
-</blockquote>
-<blockquote class="blockquote">
-<p>DIY: Preparing choropleth maps by using similar classification method but with different numbers of classes (i.e.&nbsp;2, 6, 10, 20). Compare the output maps, what observation can you draw?</p>
-</blockquote>
 </section>
 <section id="plotting-choropleth-map-with-custom-break" class="level3">
 <h3 class="anchored" data-anchor-id="plotting-choropleth-map-with-custom-break">2.4.3.2 Plotting choropleth map with custom break</h3>
-<p>For all the built-in styles, the category breaks are computed internally. In order to override these defaults, the breakpoints can be set explicitly by means of the <em>breaks</em> argument to the <em>tm_fill()</em>. It is important to note that, in <strong>tmap</strong> the breaks include a minimum and maximum. As a result, in order to end up with n categories, n+1 elements must be specified in the <em>breaks</em> option (the values must be in increasing order).</p>
+<p>For all the built-in styles, the category breaks are computed internally. In order to override these defaults, the breakpoints can be set explicitly by means of the <em>breaks</em> argument to the <em>tm_fill()</em>.</p>
+<blockquote class="blockquote">
+<p><em>It is important to note that, in <strong>tmap</strong> the breaks include a minimum and maximum. As a result, in order to end up with n categories, n+1 elements must be specified in the breaks option (the values must be in increasing order).</em></p>
+</blockquote>
 <p>Before we get started, it is always a good practice to get some descriptive statistics on the variable before setting the break points. Code chunk below will be used to compute and display the descriptive statistics of <strong>DEPENDENCY</strong> field.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mpsz_pop2020<span class="sc">$</span>DEPENDENCY)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -687,7 +735,7 @@ dbl (2): Pop, Time
 <p><strong>tmap</strong>&nbsp;supports colour ramps either defined by the user or a set of predefined colour ramps from the&nbsp;<strong>RColorBrewer</strong>&nbsp;package.</p>
 <section id="using-colourbrewer-palette" class="level3">
 <h3 class="anchored" data-anchor-id="using-colourbrewer-palette">2.4.4.1 Using ColourBrewer palette</h3>
-<p>To change the colour, we assign the preferred colour to palette argument of tm_fill() as shown in the code chunk below.</p>
+<p>To change the colour, we assign the preferred colour to palette argument of <em><code>tm_fill()</code></em> as shown.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>,</span>
@@ -700,7 +748,7 @@ dbl (2): Pop, Time
 </div>
 </div>
 <p>Notice that the choropleth map is shaded in green.</p>
-<p>To reverse the colour shading, add a “-” prefix.</p>
+<p>To reverse the colour shading, add a <code>“-” prefix</code>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>,</span>
@@ -719,7 +767,7 @@ dbl (2): Pop, Time
 <p>Map layout refers to the combination of all map elements into a cohensive map. Map elements include among others the objects to be mapped, the title, the scale bar, the compass, margins and aspects ratios. Colour settings and data classification methods covered in the previous section relate to the palette and break-points are used to affect how the map looks.</p>
 <section id="map-legend" class="level3">
 <h3 class="anchored" data-anchor-id="map-legend">2.4.5.1 Map Legend</h3>
-<p>In tmap, several legend options are provided to change the placement, format and appearance of the legend.</p>
+<p>In <strong>tmap</strong>, several legend options are provided to change the placement, format and appearance of the legend.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>, </span>
@@ -744,8 +792,8 @@ dbl (2): Pop, Time
 </section>
 <section id="map-style" class="level3">
 <h3 class="anchored" data-anchor-id="map-style">2.4.5.2 Map style</h3>
-<p><strong>tmap</strong> allows a wide variety of layout settings to be changed. They can be called by using <em>tmap_style()</em>.</p>
-<p>The code chunk below shows the <em>classic</em> style is used.</p>
+<p><strong>tmap</strong> allows a wide variety of layout settings to be changed. They can be called by using <em><code>tmap_style()</code></em>.</p>
+<p>The code shows the <em>classic</em> style is used. <code>tmap_style("classic")</code></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="st">"DEPENDENCY"</span>, </span>
@@ -813,7 +861,7 @@ dbl (2): Pop, Time
 </ul>
 <section id="by-assigning-values-to-at-least-one-of-the-aesthetic-arguments" class="level3">
 <h3 class="anchored" data-anchor-id="by-assigning-values-to-at-least-one-of-the-aesthetic-arguments">2.4.6.1 By assigning values to at least one of the aesthetic arguments</h3>
-<p>In this example, small multiple choropleth maps are created by defining&nbsp;<strong><em>ncols</em></strong>&nbsp;in&nbsp;<strong>tm_fill()</strong></p>
+<p>Here small multiple choropleth maps are created by defining&nbsp;<strong><em>ncols</em></strong>&nbsp;in&nbsp;<strong>tm_fill()</strong></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(mpsz_pop2020)<span class="sc">+</span></span>
 <span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_fill</span>(<span class="fu">c</span>(<span class="st">"YOUNG"</span>, <span class="st">"AGED"</span>),</span>

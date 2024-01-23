@@ -1,6 +1,6 @@
 ---
 title: "Hands-on Exercise 1: Geospatial Data Wrangling with R"
-categories: ["Hands-on Exercise", "tidyverse", "sf", "ggplot2"]
+categories: ["Hands-on Exercise", "tidyverse", "sf", "ggplot2", "dplyr", "data wrangling"]
 execute: 
   warning: false
 date: "`r Sys.Date()`"
@@ -502,7 +502,7 @@ ggplot(data=mpsz3414,
 >
 > -   This code uses the **`ggplot()`** function from the **`ggplot2`** package to create a more customizable and aesthetically pleasing histogram.
 >
-> -   The **`aes()`** function is used to define the aesthetics, including the x-axis variable (**`PreSch Density`**). \
+> -   The **`aes()`** function is used to define the aesthetics, including the x-axis variable (**`PreSch Density`**).\
 >     The **`as.numeric()`** conversion is applied to ensure that the variable is treated as numeric.
 >
 > -   **`geom_histogram()`** is used to create the histogram with specific customization options. **`bins = 20`** specifies the number of bins, and **`color`** and **`fill`** set the outline and fill color of the bars.

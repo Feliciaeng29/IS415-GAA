@@ -350,6 +350,8 @@ buffer_cycling <- st_buffer(cyclingpath,
 > -   **`dist = 5`** specifies the buffer distance (5 meters).
 >
 > -   **`nQuadSegs = 30`** controls the smoothness of the buffer edges by specifying the number of quadrature segments.
+>
+> -   `nQuadSegs` is an argument to specify the number of segment to be used to create a buffer.  When the number increases, for example from 1 to 2 and 2 to 5 , the buffer will be more rounded especially at the edge of the buffer
 
 This is followed by calculating the area of the buffers as shown in the code chunk below.
 

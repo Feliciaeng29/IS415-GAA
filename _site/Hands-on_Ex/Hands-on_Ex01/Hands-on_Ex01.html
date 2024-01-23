@@ -772,6 +772,7 @@ $ geometry                       &lt;POINT [m]&gt; POINT (41972.5 36390.05), POI
 <li><p><strong><code>cyclingpath</code></strong> is an <strong><code>sf</code></strong> object representing the current cycling path.</p></li>
 <li><p><strong><code>dist = 5</code></strong> specifies the buffer distance (5 meters).</p></li>
 <li><p><strong><code>nQuadSegs = 30</code></strong> controls the smoothness of the buffer edges by specifying the number of quadrature segments.</p></li>
+<li><p><code>nQuadSegs</code> is an argument to specify the number of segment to be used to create a buffer.&nbsp; When the number increases, for example from 1 to 2 and 2 to 5 , the buffer will be more rounded especially at the edge of the buffer</p></li>
 </ul>
 </blockquote>
 <p>This is followed by calculating the area of the buffers as shown in the code chunk below.</p>

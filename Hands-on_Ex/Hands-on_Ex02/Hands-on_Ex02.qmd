@@ -21,7 +21,7 @@ categories: ["Hands-on Exercise", "tidyverse", "sf", "tmap"]
 >
 > Among the four packages, **readr**, **tidyr** and **dplyr** are part of **tidyverse** package.
 
-To load the 4 packages that we will be using readr, tidyr and dplyr and sf packages.
+To load the 4 packages that we will be using readr, tidyr and dplyr and sf packages:
 
 ```{r}
 pacman::p_load(sf, tmap, tidyverse)
@@ -29,16 +29,24 @@ pacman::p_load(sf, tmap, tidyverse)
 
 # 2.3 Importing Data into R
 
+Two data set will be used to create the choropleth map. They are:
+
+-   Master Plan 2014 Subzone Boundary (Web) (i.e. `MP14_SUBZONE_WEB_PL`) in ESRI shapefile format. It can be downloaded at [data.gov.sg](https://data.gov.sg/) This is a geospatial data. It consists of the geographical boundary of Singapore at the planning subzone level. The data is based on URA Master Plan 2014.
+
+-   Singapore Residents by Planning Area / Subzone, Age Group, Sex and Type of Dwelling, June 2011-2020 in csv format (i.e. `respopagesextod2011to2020.csv`). This is an aspatial data fie. It can be downloaded at [Department of Statistics, Singapore](https://www.singstat.gov.sg/) Although it does not contain any coordinates values, but it’s PA and SZ fields can be used as unique identifiers to geocode to `MP14_SUBZONE_WEB_PL` shapefile.
+
+> Note: aspatial data file does not contain any coordinates values, but it’s PA and SZ fields can be used as unique identifiers to geocode to `MP14_SUBZONE_WEB_PL` shapefile
+
 ## 2.3.2 Importing Geospatial Data into R
 
-This code uses st_read() function of sf package to import MP14_SUBZONE_WEB_PL shapefile into R as a simple feature data frame called mpsz.
+This code uses st_read() function of sf package to import `MP14_SUBZONE_WEB_PL` shapefile into R as a simple feature data frame called `mpsz.`
 
 ```{r}
 mpsz <- st_read(dsn = "data/geospatial", 
                 layer = "MP14_SUBZONE_WEB_PL")
 ```
 
-Examine the content of mpsz by
+Examine the content of mpsz by *(Note: only the first 10 records are displayed for brevity)*
 
 ```{r}
 mpsz
@@ -48,11 +56,17 @@ mpsz
 
 Import respopagsex2011to2020csv file into RStudio and save the file into R dataframe called popdata.
 
-The task will be perfromed by using read_csv()function of readr package as shown in the code chunk below.
+The task will be performed by using *`read_csv()`* function of **readr** package as shown in the code chunk below.
 
 ```{r}
 popdata <- read_csv("data/aspatial/respopagesextod2011to2020.csv")
 ```
+
+> [Note to self:]{.underline}
+>
+> -   **geospatial data**: `st_read()`
+>
+> -   **attribute data**: `read_csv()`
 
 ## 2.3.4 Data Preparation
 
@@ -95,9 +109,33 @@ mutate(`DEPENDENCY` = (`YOUNG` + `AGED`)
        `TOTAL`, `DEPENDENCY`)
 ```
 
+> [Note to self:]{.underline}
+>
+> 1.  **`filter(Time == 2020)`**: It filters the dataset to include only rows where the "Time" variable is equal to 2020.
+>
+> 2.  **`group_by(PA, SZ, AG)`**: It groups the filtered data by the variables PA, SZ, and AG.
+>
+> 3.  **`summarise(POP = sum(Pop))`**: It calculates the sum of the "Pop" variable for each group of PA, SZ, and AG and renames the sum as "POP."
+>
+> 4.  **`ungroup()`**: It removes the grouping, ensuring that subsequent operations are applied to the entire dataset.
+>
+> 5.  **`pivot_wider(names_from=AG, values_from=POP)`**: It reshapes the data, making it wider by creating new columns for each unique value in the "AG" variable and populating these columns with corresponding values from the "POP" variable.
+>
+> 6.  **`mutate(YOUNG = rowSums(.[3:6]) + rowSums(.[12]))`**: It creates a new column named "YOUNG" by summing the values across specific columns representing age groups 0 to 4, 5 to 9, 10 to 14, 15 to 19, and 60 to 64.
+>
+> 7.  **`mutate('ECONOMY ACTIVE' = rowSums(.[7:11]) + rowSums(.[13:15]))`**: It creates a new column named "ECONOMY ACTIVE" by summing the values across specific columns representing age groups 25 to 29, 30 to 34, 35 to 39, 40 to 44, 45 to 49, 50 to 54, and 55 to 59.
+>
+> 8.  **`mutate('AGED' = rowSums(.[16:21]))`**: It creates a new column named "AGED" by summing the values across specific columns representing age groups 65 and above.
+>
+> 9.  **`mutate('TOTAL' = rowSums(.[3:21]))`**: It creates a new column named "TOTAL" by summing the values across all age group columns.
+>
+> 10. **`mutate('DEPENDENCY' = ('YOUNG' + 'AGED') / 'ECONOMY ACTIVE')`**: It creates a new column named "DEPENDENCY" by calculating the ratio between the sum of "YOUNG" and "AGED" against "ECONOMY ACTIVE."
+>
+> 11. **`select('PA', 'SZ', 'YOUNG', 'ECONOMY ACTIVE', 'AGED', 'TOTAL', 'DEPENDENCY')`**: It selects specific columns from the final dataset, including PA, SZ, YOUNG, ECONOMY ACTIVE, AGED, TOTAL, and DEPENDENCY.
+
 ### 2.3.4.2 Joining the attribute data and geospatial data
 
-Before we can perform the georelational join, one extra step is required to convert the values in PA and SZ fields to uppercase. This is because the values of PA and SZ fields are made up of upper- and lowercase. On the other, hand the SUBZONE_N and PLN_AREA_N are in uppercase.
+Before we can perform the georelational join, one extra step is required to convert the values in **PA and SZ fields to uppercase**. This is because the values of PA and SZ fields are made up of **upper- and lowercase**. On the other, hand the `SUBZONE_N` and `PLN_AREA_N` are in **uppercase**.
 
 ```{r}
 popdata2020 <- popdata2020 %>%
@@ -106,16 +144,45 @@ popdata2020 <- popdata2020 %>%
   filter(`ECONOMY ACTIVE` > 0)
 ```
 
-Next, *left_join()* of **dplyr** is used to join the geographical data and attribute table using planning subzone name e.g. *SUBZONE_N* and *SZ* as the common identifier.
+> [Note to self:]{.underline}\
+> **`mutate_at(.vars = vars(PA, SZ), .funs = list(toupper))`**: This line uses the **`mutate_at`** function from the dplyr package to apply the **`toupper`** function (which converts strings to uppercase) to the specified columns "PA" and "SZ." This ensures that the values in these columns are in uppercase, as geospatial data often uses uppercase identifiers for consistency.
+>
+> **`filter(ECONOMY ACTIVE > 0)`**: After converting the values to uppercase, this line filters the dataset to include only rows where the "ECONOMY ACTIVE" column has values greater than 0. This step is likely done to exclude rows with no economic activity, focusing on areas with some level of economic activity.
+>
+> To sum up, the code is cleaning and preparing the 'popdata2020' dataset for georelational join by converting certain columns to uppercase and filtering out rows with no economic activity.
+
+Next, *left_join()* of **dplyr** is used to join the geographical data and attribute table using planning subzone name e.g. *`SUBZONE_N`* and *`SZ`* as the **common identifier**.
 
 ```{r}
 mpsz_pop2020 <- left_join(mpsz, popdata2020,
                           by = c("SUBZONE_N" = "SZ"))
 ```
 
-Thing to learn from the code chunk above:
+> Thing to learn from the code chunk above:
+>
+> -   *left_join()* of **dplyr** package is used with `mpsz` simple feature data frame as the left data table is to ensure that the output will be a simple features data frame.
 
--   *left_join()* of **dplyr** package is used with `mpsz` simple feature data frame as the left data table is to ensure that the output will be a simple features data frame.
+> *What is the difference between left join and right join?*
+>
+> ***Left Join:***
+>
+> -   ***Definition:** A left join returns all rows from the left (or first) table and the matching rows from the right (or second) table. If there is no match in the right table, the result will contain NULL values for columns from the right table.*
+>
+> -   ***Syntax:`left_join(a, b, by = c("common_column_name"))`***
+>
+> -   ***Use Case:** Use a left join when the dataframe **`a`** is considered the main dataframe, and you want to keep all the records from it while also adding matched records from dataframe **`b`**.*
+>
+> -   ***Example Code:`left_join(main_dataframe, additional_dataframe, by = c("common_column"))`***
+>
+> ***Right Join:***
+>
+> -   ***Definition:** A right join returns all rows from the right (or second) table and the matching rows from the left (or first) table. If there is no match in the left table, the result will contain NULL values for columns from the left table.*
+>
+> -   ***Syntax:`right_join(a, b, by = c("common_column_name"))`***
+>
+> -   ***Use Case:** Use a right join when the dataframe **`b`** is considered the main dataframe, and you want to keep all the records from it while also adding matched records from dataframe **`a`**.*
+>
+> -   ***Example Code:`right_join(main_dataframe, additional_dataframe, by = c("common_column"))`***
 
 ```{r}
 write_rds(mpsz_pop2020, "data/rds/mpszpop2020.rds")
@@ -134,7 +201,7 @@ Two approaches can be used to prepare thematic map using *tmap*, they are:
 
 ## 2.4.1 Plotting a choropleth map quickly by using qtm()
 
-The easiest and quickest to draw a choropleth map using tmap is using qtm(). It is concise and provides a good default visualisation in many cases.
+The easiest and quickest to draw a choropleth map using **tmap** is using *`qtm()`*. It is concise and provides a good default visualisation in many cases.
 
 This code will draw a cartographic standard choropleth map
 
@@ -144,11 +211,11 @@ qtm(mpsz_pop2020,
     fill = "DEPENDENCY")
 ```
 
-Things to learn from the code chunk above:
-
--   *tmap_mode()* with “plot” option is used to produce a static map. For interactive mode, “view” option should be used.
-
--   *fill* argument is used to map the attribute (i.e. DEPENDENCY)
+> Things to learn from the code chunk above:
+>
+> -   *tmap_mode()* with “plot” option is used to produce a static map. For interactive mode, “view” option should be used.
+>
+> -   *fill* argument is used to map the attribute (i.e. DEPENDENCY)
 
 ## 2.4.2 Creating a choropleth map by using tmap's elements
 

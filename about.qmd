@@ -4,9 +4,11 @@ title: "About"
 
 ![](images/studioghibli.gif){fig-align="center"}
 
-Hi there! I am Felicia currently a Year 3 computer science student.
+`Hi there! I am Felicia currently a Year 3 computer science student💻`
 
-> Did you know? I have a deep appreciation for Studio Ghibli movies—they never fail to captivate me. In addition to my love for these, I find solace in the realms of books and the strokes of a paintbrush during my leisure hours.
+On this website, I invite you to join me on my journey as I explore geospatial analysis✍️
+
+> *Did you know? I have a deep appreciation for 🎞️Studio Ghibli movies—they never fail to captivate me. In addition to my love for these, I find solace in the realms of books📚 and the strokes of a paintbrush🎨 during my leisure hours.*
 
 ![](images/painting.gif){fig-align="center"}
 

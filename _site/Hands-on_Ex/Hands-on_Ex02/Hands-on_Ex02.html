@@ -290,16 +290,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
 <p>Among the four packages,&nbsp;<strong>readr</strong>,&nbsp;<strong>tidyr</strong>&nbsp;and&nbsp;<strong>dplyr</strong>&nbsp;are part of&nbsp;<strong>tidyverse</strong>&nbsp;package.</p>
 </blockquote>
-<p>To load the 4 packages that we will be using readr, tidyr and dplyr and sf packages.</p>
+<p>To load the 4 packages that we will be using readr, tidyr and dplyr and sf packages:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, tmap, tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="importing-data-into-r" class="level1">
 <h1>2.3 Importing Data into R</h1>
+<p>Two data set will be used to create the choropleth map. They are:</p>
+<ul>
+<li><p>Master Plan 2014 Subzone Boundary (Web) (i.e.&nbsp;<code>MP14_SUBZONE_WEB_PL</code>) in ESRI shapefile format. It can be downloaded at <a href="https://data.gov.sg/">data.gov.sg</a> This is a geospatial data. It consists of the geographical boundary of Singapore at the planning subzone level. The data is based on URA Master Plan 2014.</p></li>
+<li><p>Singapore Residents by Planning Area / Subzone, Age Group, Sex and Type of Dwelling, June 2011-2020 in csv format (i.e.&nbsp;<code>respopagesextod2011to2020.csv</code>). This is an aspatial data fie. It can be downloaded at <a href="https://www.singstat.gov.sg/">Department of Statistics, Singapore</a> Although it does not contain any coordinates values, but it’s PA and SZ fields can be used as unique identifiers to geocode to <code>MP14_SUBZONE_WEB_PL</code> shapefile.</p></li>
+</ul>
+<blockquote class="blockquote">
+<p>Note: aspatial data file does not contain any coordinates values, but it’s PA and SZ fields can be used as unique identifiers to geocode to&nbsp;<code>MP14_SUBZONE_WEB_PL</code>&nbsp;shapefile</p>
+</blockquote>
 <section id="importing-geospatial-data-into-r" class="level2">
 <h2 class="anchored" data-anchor-id="importing-geospatial-data-into-r">2.3.2 Importing Geospatial Data into R</h2>
-<p>This code uses st_read() function of sf package to import MP14_SUBZONE_WEB_PL shapefile into R as a simple feature data frame called mpsz.</p>
+<p>This code uses st_read() function of sf package to import <code>MP14_SUBZONE_WEB_PL</code> shapefile into R as a simple feature data frame called <code>mpsz.</code></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>mpsz <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, </span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -314,7 +322,7 @@ Bounding box:  xmin: 2667.538 ymin: 15748.72 xmax: 56396.44 ymax: 50256.33
 Projected CRS: SVY21</code></pre>
 </div>
 </div>
-<p>Examine the content of mpsz by</p>
+<p>Examine the content of mpsz by <em>(Note: only the first 10 records are displayed for brevity)</em></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>mpsz</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -363,7 +371,7 @@ First 10 features:
 <section id="importing-attribute-data-into-r" class="level2">
 <h2 class="anchored" data-anchor-id="importing-attribute-data-into-r">Importing Attribute Data into R</h2>
 <p>Import respopagsex2011to2020csv file into RStudio and save the file into R dataframe called popdata.</p>
-<p>The task will be perfromed by using read_csv()function of readr package as shown in the code chunk below.</p>
+<p>The task will be performed by using <em><code>read_csv()</code></em> function of <strong>readr</strong> package as shown in the code chunk below.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>popdata <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/aspatial/respopagesextod2011to2020.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
@@ -377,6 +385,13 @@ dbl (2): Pop, Time
 ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
 </div>
 </div>
+<blockquote class="blockquote">
+<p><u>Note to self:</u></p>
+<ul>
+<li><p><strong>geospatial data</strong>: <code>st_read()</code></p></li>
+<li><p><strong>attribute data</strong>: <code>read_csv()</code></p></li>
+</ul>
+</blockquote>
 </section>
 <section id="data-preparation" class="level2">
 <h2 class="anchored" data-anchor-id="data-preparation">2.3.4 Data Preparation</h2>
@@ -418,25 +433,66 @@ dbl (2): Pop, Time
 `.groups` argument.</code></pre>
 </div>
 </div>
+<blockquote class="blockquote">
+<p><u>Note to self:</u></p>
+<ol type="1">
+<li><p><strong><code>filter(Time == 2020)</code></strong>: It filters the dataset to include only rows where the “Time” variable is equal to 2020.</p></li>
+<li><p><strong><code>group_by(PA, SZ, AG)</code></strong>: It groups the filtered data by the variables PA, SZ, and AG.</p></li>
+<li><p><strong><code>summarise(POP = sum(Pop))</code></strong>: It calculates the sum of the “Pop” variable for each group of PA, SZ, and AG and renames the sum as “POP.”</p></li>
+<li><p><strong><code>ungroup()</code></strong>: It removes the grouping, ensuring that subsequent operations are applied to the entire dataset.</p></li>
+<li><p><strong><code>pivot_wider(names_from=AG, values_from=POP)</code></strong>: It reshapes the data, making it wider by creating new columns for each unique value in the “AG” variable and populating these columns with corresponding values from the “POP” variable.</p></li>
+<li><p><strong><code>mutate(YOUNG = rowSums(.[3:6]) + rowSums(.[12]))</code></strong>: It creates a new column named “YOUNG” by summing the values across specific columns representing age groups 0 to 4, 5 to 9, 10 to 14, 15 to 19, and 60 to 64.</p></li>
+<li><p><strong><code>mutate('ECONOMY ACTIVE' = rowSums(.[7:11]) + rowSums(.[13:15]))</code></strong>: It creates a new column named “ECONOMY ACTIVE” by summing the values across specific columns representing age groups 25 to 29, 30 to 34, 35 to 39, 40 to 44, 45 to 49, 50 to 54, and 55 to 59.</p></li>
+<li><p><strong><code>mutate('AGED' = rowSums(.[16:21]))</code></strong>: It creates a new column named “AGED” by summing the values across specific columns representing age groups 65 and above.</p></li>
+<li><p><strong><code>mutate('TOTAL' = rowSums(.[3:21]))</code></strong>: It creates a new column named “TOTAL” by summing the values across all age group columns.</p></li>
+<li><p><strong><code>mutate('DEPENDENCY' = ('YOUNG' + 'AGED') / 'ECONOMY ACTIVE')</code></strong>: It creates a new column named “DEPENDENCY” by calculating the ratio between the sum of “YOUNG” and “AGED” against “ECONOMY ACTIVE.”</p></li>
+<li><p><strong><code>select('PA', 'SZ', 'YOUNG', 'ECONOMY ACTIVE', 'AGED', 'TOTAL', 'DEPENDENCY')</code></strong>: It selects specific columns from the final dataset, including PA, SZ, YOUNG, ECONOMY ACTIVE, AGED, TOTAL, and DEPENDENCY.</p></li>
+</ol>
+</blockquote>
 </section>
 <section id="joining-the-attribute-data-and-geospatial-data" class="level3">
 <h3 class="anchored" data-anchor-id="joining-the-attribute-data-and-geospatial-data">2.3.4.2 Joining the attribute data and geospatial data</h3>
-<p>Before we can perform the georelational join, one extra step is required to convert the values in PA and SZ fields to uppercase. This is because the values of PA and SZ fields are made up of upper- and lowercase. On the other, hand the SUBZONE_N and PLN_AREA_N are in uppercase.</p>
+<p>Before we can perform the georelational join, one extra step is required to convert the values in <strong>PA and SZ fields to uppercase</strong>. This is because the values of PA and SZ fields are made up of <strong>upper- and lowercase</strong>. On the other, hand the <code>SUBZONE_N</code> and <code>PLN_AREA_N</code> are in <strong>uppercase</strong>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>popdata2020 <span class="ot">&lt;-</span> popdata2020 <span class="sc">%&gt;%</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_at</span>(<span class="at">.vars =</span> <span class="fu">vars</span>(PA, SZ), </span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">.funs =</span> <span class="fu">list</span>(toupper)) <span class="sc">%&gt;%</span></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="st">`</span><span class="at">ECONOMY ACTIVE</span><span class="st">`</span> <span class="sc">&gt;</span> <span class="dv">0</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Next,&nbsp;<em>left_join()</em>&nbsp;of&nbsp;<strong>dplyr</strong>&nbsp;is used to join the geographical data and attribute table using planning subzone name e.g.&nbsp;<em>SUBZONE_N</em>&nbsp;and&nbsp;<em>SZ</em>&nbsp;as the common identifier.</p>
+<blockquote class="blockquote">
+<p><u>Note to self:</u><br>
+<strong><code>mutate_at(.vars = vars(PA, SZ), .funs = list(toupper))</code></strong>: This line uses the <strong><code>mutate_at</code></strong> function from the dplyr package to apply the <strong><code>toupper</code></strong> function (which converts strings to uppercase) to the specified columns “PA” and “SZ.” This ensures that the values in these columns are in uppercase, as geospatial data often uses uppercase identifiers for consistency.</p>
+<p><strong><code>filter(ECONOMY ACTIVE &gt; 0)</code></strong>: After converting the values to uppercase, this line filters the dataset to include only rows where the “ECONOMY ACTIVE” column has values greater than 0. This step is likely done to exclude rows with no economic activity, focusing on areas with some level of economic activity.</p>
+<p>To sum up, the code is cleaning and preparing the ‘popdata2020’ dataset for georelational join by converting certain columns to uppercase and filtering out rows with no economic activity.</p>
+</blockquote>
+<p>Next,&nbsp;<em>left_join()</em>&nbsp;of&nbsp;<strong>dplyr</strong>&nbsp;is used to join the geographical data and attribute table using planning subzone name e.g.&nbsp;<em><code>SUBZONE_N</code></em>&nbsp;and&nbsp;<em><code>SZ</code></em>&nbsp;as the <strong>common identifier</strong>.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mpsz_pop2020 <span class="ot">&lt;-</span> <span class="fu">left_join</span>(mpsz, popdata2020,</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                          <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"SUBZONE_N"</span> <span class="ot">=</span> <span class="st">"SZ"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+<blockquote class="blockquote">
 <p>Thing to learn from the code chunk above:</p>
 <ul>
 <li><em>left_join()</em> of <strong>dplyr</strong> package is used with <code>mpsz</code> simple feature data frame as the left data table is to ensure that the output will be a simple features data frame.</li>
 </ul>
+</blockquote>
+<blockquote class="blockquote">
+<p><em>What is the difference between left join and right join?</em></p>
+<p><strong><em>Left Join:</em></strong></p>
+<ul>
+<li><p><em><strong>Definition:</strong> A left join returns all rows from the left (or first) table and the matching rows from the right (or second) table. If there is no match in the right table, the result will contain NULL values for columns from the right table.</em></p></li>
+<li><p><strong><em>Syntax:<code>left_join(a, b, by = c("common_column_name"))</code></em></strong></p></li>
+<li><p><em><strong>Use Case:</strong> Use a left join when the dataframe <strong><code>a</code></strong> is considered the main dataframe, and you want to keep all the records from it while also adding matched records from dataframe <strong><code>b</code></strong>.</em></p></li>
+<li><p><strong><em>Example Code:<code>left_join(main_dataframe, additional_dataframe, by = c("common_column"))</code></em></strong></p></li>
+</ul>
+<p><strong><em>Right Join:</em></strong></p>
+<ul>
+<li><p><em><strong>Definition:</strong> A right join returns all rows from the right (or second) table and the matching rows from the left (or first) table. If there is no match in the left table, the result will contain NULL values for columns from the left table.</em></p></li>
+<li><p><strong><em>Syntax:<code>right_join(a, b, by = c("common_column_name"))</code></em></strong></p></li>
+<li><p><em><strong>Use Case:</strong> Use a right join when the dataframe <strong><code>b</code></strong> is considered the main dataframe, and you want to keep all the records from it while also adding matched records from dataframe <strong><code>a</code></strong>.</em></p></li>
+<li><p><strong><em>Example Code:<code>right_join(main_dataframe, additional_dataframe, by = c("common_column"))</code></em></strong></p></li>
+</ul>
+</blockquote>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(mpsz_pop2020, <span class="st">"data/rds/mpszpop2020.rds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -453,7 +509,7 @@ dbl (2): Pop, Time
 </ul>
 <section id="plotting-a-choropleth-map-quickly-by-using-qtm" class="level2">
 <h2 class="anchored" data-anchor-id="plotting-a-choropleth-map-quickly-by-using-qtm">2.4.1 Plotting a choropleth map quickly by using qtm()</h2>
-<p>The easiest and quickest to draw a choropleth map using tmap is using qtm(). It is concise and provides a good default visualisation in many cases.</p>
+<p>The easiest and quickest to draw a choropleth map using <strong>tmap</strong> is using <em><code>qtm()</code></em>. It is concise and provides a good default visualisation in many cases.</p>
 <p>This code will draw a cartographic standard choropleth map</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_mode</span>(<span class="st">"plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -466,11 +522,13 @@ dbl (2): Pop, Time
 <p><img src="Hands-on_Ex02_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
+<blockquote class="blockquote">
 <p>Things to learn from the code chunk above:</p>
 <ul>
 <li><p><em>tmap_mode()</em> with “plot” option is used to produce a static map. For interactive mode, “view” option should be used.</p></li>
 <li><p><em>fill</em> argument is used to map the attribute (i.e.&nbsp;DEPENDENCY)</p></li>
 </ul>
+</blockquote>
 </section>
 <section id="creating-a-choropleth-map-by-using-tmaps-elements" class="level2">
 <h2 class="anchored" data-anchor-id="creating-a-choropleth-map-by-using-tmaps-elements">2.4.2 Creating a choropleth map by using tmap’s elements</h2>

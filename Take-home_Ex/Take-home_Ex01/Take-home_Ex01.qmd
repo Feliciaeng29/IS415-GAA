@@ -286,12 +286,52 @@ st_crs(grab)
 ```
 
 ```{r}
+grab_sf <- st_as_sf(grab, coords = c("rawlng", "rawlat"), crs = 4326)
+```
+
+Set the coordinate reference system (CRS) to WGS84 (EPSG 4326)
+
+```{r}
+st_crs(grab_sf) <- 4326
+```
+
+```{r}
+tmap_mode("plot")
+```
+
+Plot the dots for the grab data
+
+```{r}
+grab_map <- tm_shape(grab_sf) +
+  tm_dots()
+```
+
+
+```{r}
 st_crs(mpsz)
+```
+
+```{r}
+mpsz_map <- tm_shape(mpsz) +
+  tm_polygons()
 ```
 
 
 ```{r}
 st_crs(road)
+```
+
+```{r}
+road_map <- tm_shape(road)+
+  tm_lines()
+```
+
+mapping it all together
+
+```{r}
+grab_map +
+mpsz_map +
+road_map
 ```
 
 # Mapping the geospatial data sets

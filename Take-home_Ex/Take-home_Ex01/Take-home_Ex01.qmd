@@ -53,6 +53,11 @@ The different R packages used:
 pacman::p_load(arrow, lubridate, tidyverse, sf, tmap)
 ```
 
+```{r}
+pacman::p_load(maptools, tidyverse, 
+sf, raster, spatstat, tmap,lubridate,arrow,sp)
+```
+
 # **2. The Data**
 
 ### **Apstial data**
@@ -249,7 +254,7 @@ Using st_geometry() The column in the sf data.frame that contains the geometries
 st_geometry(mpsz)
 ```
 
-We can use this to double check if all the data is in projected coordinate system `WGS84`
+We can use this to double check if all the data is in projected coordinate system `SVY21`
 
 Using glimpse() to find the basic feature information
 
@@ -286,13 +291,13 @@ st_crs(grab)
 ```
 
 ```{r}
-grab_sf <- st_as_sf(grab, coords = c("rawlng", "rawlat"), crs = 4326)
+grab_sf <- st_as_sf(grab, coords = c("rawlng", "rawlat"), crs = 3414)
 ```
 
-Set the coordinate reference system (CRS) to WGS84 (EPSG 4326)
+Set the coordinate reference system (CRS) to Svy21 (EPSG 3414)
 
 ```{r}
-st_crs(grab_sf) <- 4326
+st_crs(grab_sf) <- 3414
 ```
 
 ```{r}
@@ -302,7 +307,7 @@ tmap_mode("plot")
 Plot the dots for the grab data
 
 ```{r}
-grab_map <- tm_shape(grab_sf) +
+tm_shape(grab_sf) +
   tm_dots()
 ```
 
@@ -311,8 +316,18 @@ grab_map <- tm_shape(grab_sf) +
 st_crs(mpsz)
 ```
 
+We notice that the data is SVY21 and need to change it to WGS84
+
 ```{r}
-mpsz_map <- tm_shape(mpsz) +
+mpsz <- st_transform(mpsz, crs = 3414)
+```
+
+```{r}
+mpsz <- st_zm(mpsz)
+```
+
+```{r}
+tm_shape(mpsz) +
   tm_polygons()
 ```
 
@@ -321,17 +336,25 @@ mpsz_map <- tm_shape(mpsz) +
 st_crs(road)
 ```
 
+We notice that it is in svy21 and need to convert it to wgs84
+
 ```{r}
-road_map <- tm_shape(road)+
+road <- st_transform(road, crs = 3414)
+```
+
+```{r}
+tm_shape(road)+
   tm_lines()
 ```
 
 mapping it all together
 
 ```{r}
-grab_map +
-mpsz_map +
-road_map
+tmap_mode("plot")
+tm_shape(grab_sf) +
+  tm_dots() +
+tm_shape(mpsz) +
+  tm_polygons()
 ```
 
 # Mapping the geospatial data sets

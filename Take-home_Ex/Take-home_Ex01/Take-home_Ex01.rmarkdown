@@ -52,12 +52,7 @@ The different R packages used:
 
 
 ```{r}
-pacman::p_load(arrow, lubridate, tidyverse, sf, tmap)
-```
-
-```{r}
-pacman::p_load(maptools, tidyverse, 
-sf, raster, spatstat, tmap,lubridate,arrow,sp)
+pacman::p_load(maptools, tidyverse, sf, raster, spatstat, tmap,lubridate, arrow, sp, dplyr)
 ```
 
 
@@ -99,6 +94,17 @@ Notice that pingtimestamp is in wrong data type format. It should be in date/ ti
 
 ## 3.2 Importing Geospatial data
 
+### Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
+
+
+```{r}
+mpsz = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
+```
+
+```{r}
+glimpse(mpsz)
+```
+
 ### Importing data for Road data from OpenStreetMap
 
 In this case we will only be using road data??
@@ -112,12 +118,33 @@ road <- st_read(dsn = "data/geospatial", layer = "gis_osm_roads_free_1")
 
 #### Selecting and cleaning relevant information
 
-For more example:
-https://jenpoer-is415-gaa-exercises.netlify.app/take-home-exercises/exe-01/the1
+#### Dropping z coordinates
 
 
 ```{r}
+road <- st_zm(road)
+```
+
+```{r}
+mpsz <- st_zm(mpsz)
+```
+
+```{r}
+if (any(!st_is_valid(mpsz))) {
+  mpsz <- st_make_valid(mpsz)
+}
+```
+
 
+### cannot st_union()
+
+```{r}
+road <- mpsz %>% 
+  st_union()
+```
+
+```{r}
+plot(road)
 ```
 
 
@@ -125,23 +152,11 @@ Explain the reason why as well might need to filter the openstreet map data to o
 
 
 ```{r}
-
+road_sg <- st_intersection(road, mpsz)
 ```
 
 ```{r}
-glimpse(road)
-```
-
-
-### Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
-
-
-```{r}
-mpsz = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml")
-```
-
-```{r}
-glimpse(mpsz)
+glimpse(road_sg)
 ```
 
 
@@ -333,7 +348,10 @@ st_crs(grab)
 ```
 
 ```{r}
-grab_sf <- st_as_sf(grab, coords = c("rawlng", "rawlat"), crs = 3414)
+grab_sf <- st_as_sf(grab,
+                      coords = c("rawlng", "rawlat"),
+                      crs = 4326) %>%
+  st_transform(crs = 3414)
 ```
 
 
@@ -379,7 +397,7 @@ tm_shape(mpsz) +
 ```
 
 ```{r}
-st_crs(road)
+st_crs(road_sg)
 ```
 
 
@@ -387,11 +405,17 @@ We notice that it is in svy21 and need to convert it to wgs84
 
 
 ```{r}
-road <- st_transform(road, crs = 3414)
+road <- st_transform(road_sg, crs = 3414)
 ```
 
-```{r}
+
+***To be done after I filter the data, damn long:
 tm_shape(road)+
+  tm_lines()
+
+
+```{r}
+tm_shape(road_sg)+
   tm_lines()
 ```
 
@@ -420,7 +444,7 @@ tm_shape(destination_sf) +
   tm_dots() +
 tm_shape(mpsz) +
   tm_polygons() +
-tm_shape(road)+
+tm_shape(road_sg)+
   tm_lines()
 
 

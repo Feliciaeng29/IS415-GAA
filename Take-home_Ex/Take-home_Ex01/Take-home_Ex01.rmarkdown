@@ -155,6 +155,8 @@ summary(mpsz)
 
 ### Selecting and cleaning relevant information
 
+Filtering the fclass in road 
+
 Perform a spatial intersection between 'road' and 'mpsz', resulting in the 'road_sg' spatial object.
 
 

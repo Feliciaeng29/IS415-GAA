@@ -7,7 +7,7 @@ categories: ["In-class Exercise", "rgdal", "sf", "spdep", "tmap", "tidyverse", "
 
 The R packages we'll be introducing today are:
 
--   [**spdep**](https://cran.r-project.org/web/packages/spdep/index.html): used to create spatial weights matrix objects and related calculations (e.g. spatially lag attributes)
+-   [**spdep**](https://cran.r-project.org/web/packages/spdep/index.html): used to create spatial weights matrix objects and related calculations (e.g. spatially lag attributes) https://r-spatial.github.io/spdep/
 
 In addition, we'll be using the packages from our previous lessons:
 
@@ -16,7 +16,14 @@ In addition, we'll be using the packages from our previous lessons:
 -   [**tidyverse**](https://www.tidyverse.org/): used for importing, wrangling and visualising data (and other data science tasks!)
 
 ```{r}
-pacman::p_load(sf, spdep, tmap, tidyverse, knitr)
+#| eval: false
+install.packages("GWmodel", repos = "https://packagemanager.posit.co/cran/2023-10-13")
+```
+
+we are going to use gwss in GWmodel. gwss allows us to calculate things like mean, median, sd, skewness.
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse, knitr, GWmodel)
 ```
 
 # Getting data into R environment
@@ -53,13 +60,63 @@ Lets remember that for data: - geospatial data: st_read() - attribute data: read
 hunan <- left_join(hunan,hunan2012) %>% 
   select(1:4, 7, 15)
 ```
-sf: always have the geometric there
-so it is 6 plus your geometric figure there as the 7th.
+
+sf: always have the geometric there so it is 6 plus your geometric figure there as the 7th.
+
+# Working with Geographically Weighted Summary Statistics (GWSS)
+
+```{r}
+hunan_sp <- hunan %>%
+  as_Spatial()
+```
+
+1.  **`gwstat`**: This is likely a variable that will store the result of the geographically weighted statistics analysis.
+
+2.  **`data`**: This is the data frame or dataset on which the geographically weighted statistics will be computed. In this case, the dataset is referred to as **`hunan_sp`**.
+
+3.  **`vars`**: This specifies the variable (or variables) for which geographically weighted statistics will be calculated. In this case, it is set to "GDPPC," indicating that the analysis will focus on the variable named "GDPPC."
+
+4.  **`bw`**: This stands for bandwidth, which is a parameter that controls the spatial extent of the analysis. In this case, the bandwidth is set to 6.
+
+5.  **`kernel`**: This specifies the kernel function to be used in the geographically weighted statistics. The kernel function determines the weight assigned to neighboring observations. Here, the "bisquare" kernel is used.
+
+6.  **`adaptive`**: This is a boolean parameter (TRUE/FALSE) that controls whether the bandwidth should be adaptively determined. If set to TRUE, the bandwidth will be adjusted based on the local density of data points.
+
+7.  **`longlat`**: This is a boolean parameter indicating whether the spatial coordinates are given in longitude and latitude. If set to TRUE, it means the analysis considers geographical coordinates on the Earth's surface.
+
+hunan_sp \<- hunan %\>% as_Spatial()
+
+Currently hunan variable in sf. As an older library, gwmodel only accepts spatial data. So we need to convert from sf to spatial data.
+
+gwstat \<- gwss(data = hunan_sp, vars = "GDPPC", bw = 6, kernel = "bisquare", adaptive = TRUE, longlat = T)
+
+Since adaptive = True, we need to specify the number of neighbors using bw = 6. If adaptive = False, we need to specify bw as the fixed distance needed to capture any number of neighbors within that distance.
+
+longlat: is reading this data whether it is decimal degree or is it already projected.
+
+```{r}
+gwstat <- gwss(data = hunan_sp,
+               vars = "GDPPC",
+               bw = 6,
+               kernel = "bisquare",
+               adaptive = TRUE,
+               longlat = T)
+
+```
 
 ## Visualing Regional Development Indicator
 
-Lets prepare a basemap and a choropleth map showing the distribution of GDPPC 2012 by using qtm() of tmap package.
-(cannot change the colour and everything unless u use tm_fill())
+Lets prepare a basemap and a choropleth map showing the distribution of GDPPC 2012 by using qtm() of tmap package. (cannot change the colour and everything unless u use tm_fill())
+
+-   qtm(): is a fast way this is how it is when you break it down.
+
+-   tm_polygons(): is to plot the polygon.
+
+-   tm_text: insert text inside your plot
+
+-   \<-: save the process as an object, creating an output out of it
+
+-   tmap_arrange: allow to place several maps together
 
 ```{r}
 basemap <- tm_shape(hunan) +
@@ -70,3 +127,213 @@ gdppc <- qtm(hunan, "GDPPC")
 tmap_arrange(basemap, gdppc, asp=1, ncol=2)
 ```
 
+# Computing Contiguity Spatial Weights
+
+-   Use **poly2nb() of spdep** package to compute **contiguity weight matrices** for the study area.
+
+-   poly2nb(): Construct neighbours list from polygon list. Take the polygon and come up with the nearest neighbor for you.
+
+-   This function **builds a neighbours list** based on regions with contiguous boundaries.
+
+What this function does is to build a neighbours list based on regions with contiguous boundaries - which means they’re in ‘contact’ and share one or more boundary points. For example, on the Singapore map, the North-East region is contiguous with the North region and the East region.
+
+One thing to note is the `queen` argument:
+
+-   TRUE (default): a single shared boundary point meets the contiguity condition
+
+-   FALSE: more than one shared point is required
+
+-   note that more than one shared boundary point does not necessarily mean a shared boundary line
+
+We’ll be computing based on two types of contiguity: Queen and Rook. If you’re a chess buff (or even a chess amateur), these terms will sound familiar to you: and as you might’ve guessed, they’re related to the positions the queen and rook can move on a chess board.
+
+[Arguments]{.underline}
+
+**pl**: list of polygons of class extending SpatialPolygons, or an sf or sfc object containing non-empty (multi-)polygon objects
+
+**row.names**: character vector of region ids to be added to the neighbours list as attribute region.id, default seq(1, nrow(x)); if pl has row.names, they are used instead of the default sequence.
+
+**snap**: boundary points less than snap distance apart are considered to indicate contiguity; used both to find candidate and actual neighbours for planar geometries, but only actual neighbours for spherical geometries, as spherical spatial indexing itself injects some fuzzyness.
+
+**queen**: if TRUE, a single shared boundary point meets the contiguity condition, if FALSE, more than one shared point is required; note that more than one shared boundary point does not necessarily mean a shared boundary line
+
+**useC**: default TRUE, doing the work loop in C, may be set to false to revert to R code calling two C functions in an n\*k work loop, where k is the average number of candidate neighbours
+
+**foundInBox**: default NULL using R code or st_intersects() to generate candidate neighbours (using snap= if the geometries are not spherical); if not NULL (for legacy purposes) a list of length (n-1) with integer vectors of candidate neighbours (j \> i) (as created by the poly_findInBoxGEOS function in rgeos for clean polygons)
+
+## Computing (QUEEN) contiguity based neighbours
+
+NOTE:
+
+-   The default for 'queen' argument is TRUE.
+-   If you do not specify to queen = FALSE, this function will **return a list of first order neighbours** using the Queen criteria.
+
+`wm_q`: list and all the polygon each polygon give you each of their neighbors. But we do not know the neighbor name we only know the neighbor number. The number is the internal index of the dataframe.
+
+Then we use the `summary()` to display the list.
+
+> Always make sure to check that the number of regions must be the same as the number in the environment "list of 88"
+
+In this case we can see that the **average number of links** is `5.090909` we should always round the number up or down to a whole number. It is okay to either round up or down. Just remember to always change it to a whole number. In this case we can consider that the average number of neighbor is 5.
+
+**Link number distribution**: Explain the number of geographical areas that have different number of neighbors.
+
+-   Top row is the number of neighbors
+
+-   Second row is the number of geographical areas.
+
+-   Eg. in this case we can see that there is one geographical area that have 11 neighbors.
+
+```{r eval=TRUE, echo = TRUE}
+wm_q <- poly2nb(hunan, queen=TRUE)
+summary(wm_q)
+```
+
+So how am I suppose to know the name of the County, as I will only be show the internal index?
+
+An example:
+
+```{r}
+hunan$NAME_3[c(2,3,4,57,85)]
+```
+
+If I want to know the neighbor? I can simply do so by listing out all the list of neighbor togther without doing it one by one
+
+```{r}
+#retreiving the neighbors
+hunan$NAME_3[c(2,3,4,57,85)]
+```
+
+## Creating (ROOK) contiguity based neighbours
+
+We can see that the most connected region is 85 but it only have 20 links not 11 as compared to the Queen's method.
+
+```{r}
+wm_r <- poly2nb(hunan, queen=FALSE)
+summary(wm_r)
+```
+
+# Creating the centroids
+
+```{r}
+longitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[1]])
+```
+
+Pull out column number 2 which is the latitude
+
+```{r}
+latitude <- map_dbl(hunan$geometry, ~st_centroid(.x)[[2]])
+```
+
+cbine() is like combine. It doesn't look for lookup identifier, basically just combine it there. Because, lat and long are the same table so the sequence will be the same. Hence, do remember not to do sort in such scenario as the sequence might change causing error for the combination.
+
+```{r}
+coords <- cbind(longitude, latitude)
+```
+
+double check if the lat and long are formatted correctly
+
+```{r}
+head(coords)
+```
+
+# Plotting it out to see the difference between the 2 methods when it is place next to each other
+
+Can explore which are the ones that does not appear as a link for the Rook method. (Identify the differences)
+
+```{r}
+par(mfrow=c(1,2))
+plot(hunan$geometry, border="lightgrey", main="Queen Contiguity")
+plot(wm_q, coords, pch = 19, cex = 0.6, add = TRUE, col= "red")
+plot(hunan$geometry, border="lightgrey", main="Rook Contiguity")
+plot(wm_r, coords, pch = 19, cex = 0.6, add = TRUE, col = "red")
+```
+
+# Computing distance based neighbours
+
+For distance weight there are 2 types (fixed, adaptive). If fixed, we need to know the cut off value which determine whether they are neighbour.
+
+We need to derive the neighbours. We need to know based on the neighbours what is the certain distance.
+
+First we calculate the nearest neighbour.
+
+Have all the list of the variables there.
+
+Identify the neighbor
+
+### Spatial link distance measures
+
+Given a list of spatial neighbour links (a neighbours list of object type nb), the function returns the Euclidean distances along the links in a list of the same form as the neighbours list. If longlat = TRUE, Great Circle distances are used.
+
+`nbdists(nb, coords, longlat = NULL)`
+
+[Arguments:]{.underline}
+
+-   **nb** an object of class nb
+
+-   **coords** matrix of point coordinates, an object inheriting from SpatialPoints or an "sf" or "sfc" object; if the "sf" or "sfc" object geometries are in geographical coordinates (sf::st_is_longlat(x) == TRUE and sf::sf_use_s2() == TRUE), s2 will be used to find distances https://github.com/r-spatial/s2/issues/125
+
+-   **longlat** TRUE if point coordinates are longitude-latitude decimal degrees, in which case distances are measured in kilometers; if coords is a SpatialPoints object, the value is taken from the object itself
+
+```{r}
+#coords <- coordinates(hunan)
+k1 <- knn2nb(knearneigh(coords))
+```
+
+```{r}
+k1dists <- unlist(nbdists(k1, coords,
+                        longlat=TRUE))
+```
+
+```{r}
+summary(k1dists)
+```
+
+# Computing adaptive distance weight matrix
+
+Go as far as 6 neighbors to get you the list.
+
+```{r}
+knn6 <- knn2nb(knearneigh(coords, k=6))
+knn6
+```
+
+## Computing fixed distance weight matrix
+
+```{r}
+wm_d62 <- dnearneigh(coords, 0, 62, longlat = TRUE)
+wm_d62
+```
+
+```{r}
+str(wm_d62)
+```
+
+```{r}
+table(hunan$County, card(wm_d62))
+```
+
+```{r}
+n_comp <- n.comp.nb(wm_d62)
+n_comp$nc
+```
+
+```{r}
+table(n_comp$comp.id)
+```
+
+## Plotting fixed distance weight matrix
+
+```{r}
+plot(hunan$geometry, border="lightgrey")
+plot(wm_d62, coords, add=TRUE)
+plot(k1, coords, add=TRUE, col="red", length=0.08)
+```
+
+8.9.2
+
+bweights: take all the neighbors and sum it up
+
+w_sum_gdppc \<- qtm(hunan, "w_sum GDPPC") tmap_arrange(lag_sum_gdppc, w_sum_gdppc, asp=1, ncol=2)
+
+This takes all the neighbor and sum itself. This includes itself

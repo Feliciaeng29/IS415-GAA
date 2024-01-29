@@ -1,5 +1,7 @@
 ---
 title: "Take home Exercise 1: Application of Spatial Point Patterns Analysis to discover the geographical distribution of Grab hailing services in Singapore"
+author:
+  - name: Felicia Eng
 date: "January 2024"
 date-modified: "`r Sys.Date()`"
 execute: 
@@ -10,7 +12,6 @@ editor: visual
 ---
 
 
-rmb always check for duplicates
 
 ## **Objectives**
 

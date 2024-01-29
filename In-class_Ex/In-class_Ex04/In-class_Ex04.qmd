@@ -1,0 +1,72 @@
+---
+title: "In class Exercise 4"
+categories: ["In-class Exercise", "rgdal", "sf", "spdep", "tmap", "tidyverse", "knitr", "sp", "spNetwork", "spatial weights and applications", "choropleth map"]
+---
+
+# Importing Packages
+
+The R packages we'll be introducing today are:
+
+-   [**spdep**](https://cran.r-project.org/web/packages/spdep/index.html): used to create spatial weights matrix objects and related calculations (e.g. spatially lag attributes)
+
+In addition, we'll be using the packages from our previous lessons:
+
+-   [**sf**](https://cran.r-project.org/web/packages/sf/index.html): used for importing, managing, and processing geospatial data
+-   [**tmap**](https://cran.r-project.org/web/packages/tmap/index.html): used for plotting thematic maps, such as choropleth and bubble maps
+-   [**tidyverse**](https://www.tidyverse.org/): used for importing, wrangling and visualising data (and other data science tasks!)
+
+```{r}
+pacman::p_load(sf, spdep, tmap, tidyverse, knitr)
+```
+
+# Getting data into R environment
+
+The datasets used for this exercise are:
+
+-   `Hunan_2012` (aspatial data): a .csv which stores Hunan's local development indicators in 2012
+-   `Hunan` (geospatial data): an ESRI shapefile which stores Hunan's country boundary layers
+
+## Importing shapefile into r environement
+
+Let's import our aspatial and geospatial data per usual:
+
+```{r}
+#output: simple features object
+hunan <- st_read(dsn = "data/geospatial", 
+                 layer = "Hunan")
+```
+
+## Import csv file into r environment
+
+```{r}
+#output: R dataframe class
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
+```
+
+Lets remember that for data: - geospatial data: st_read() - attribute data: read_csv()
+
+## Data preparation
+
+### Import csv file into r environment & performing a relational join
+
+```{r}
+hunan <- left_join(hunan,hunan2012) %>% 
+  select(1:4, 7, 15)
+```
+sf: always have the geometric there
+so it is 6 plus your geometric figure there as the 7th.
+
+## Visualing Regional Development Indicator
+
+Lets prepare a basemap and a choropleth map showing the distribution of GDPPC 2012 by using qtm() of tmap package.
+(cannot change the colour and everything unless u use tm_fill())
+
+```{r}
+basemap <- tm_shape(hunan) +
+  tm_polygons() +
+  tm_text("NAME_3", size=0.5)
+
+gdppc <- qtm(hunan, "GDPPC")
+tmap_arrange(basemap, gdppc, asp=1, ncol=2)
+```
+

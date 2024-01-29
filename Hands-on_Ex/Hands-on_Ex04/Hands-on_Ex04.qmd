@@ -1,6 +1,6 @@
 ---
 title: "Hands on Exercise 4: Spatial Weights and Applications"
-categories: ["Hands-on Exercise", "rgdal", "sf", "spdep", "tmap", "tidyverse", "knitr", "sp", "spNetwork", "spatial weights and applications"]
+categories: ["Hands-on Exercise", "rgdal", "sf", "spdep", "tmap", "tidyverse", "knitr", "sp", "spNetwork", "spatial weights and applications", "choropleth map"]
 ---
 
 # Importing Packages
@@ -67,7 +67,7 @@ gdppc <- qtm(hunan, "GDPPC")
 tmap_arrange(basemap, gdppc, asp=1, ncol=2)
 ```
 
-# Computing Cotiguity Spatial Weights
+# Computing Contiguity Spatial Weights
 
 -   Use **poly2nb() of spdep** package to compute **contiguity weight matrices** for the study area.
 

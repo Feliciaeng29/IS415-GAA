@@ -104,6 +104,23 @@ gwstat <- gwss(data = hunan_sp,
 
 ```
 
+##  Homework 
+
+Plot similar to spatial window sum plots
+
+GDPPC_LM
+
+GDPPC_LSD
+
+LVar
+
+LSKe
+
+LCV
+
+
+# Below are the notes for Hands-on Exercise 4 (PLS IGNORE)
+
 ## Visualing Regional Development Indicator
 
 Lets prepare a basemap and a choropleth map showing the distribution of GDPPC 2012 by using qtm() of tmap package. (cannot change the colour and everything unless u use tm_fill())

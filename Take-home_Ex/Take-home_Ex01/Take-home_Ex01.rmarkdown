@@ -12,7 +12,6 @@ editor: visual
 ---
 
 
-
 ## **Objectives**
 
 Geospatial analytics hold tremendous potential to address complex problems facing society. In this study, you are tasked to apply appropriate spatial point patterns analysis methods to discover the geographical and spatio-temporal distribution of Grab hailing services locations in Singapore.
@@ -59,7 +58,7 @@ The different R packages used:
 
 
 ```{r}
-pacman::p_load(maptools, tidyverse, sf, raster, spatstat, tmap,lubridate, arrow, sp, dplyr)
+pacman::p_load(maptools, tmap, tidyverse, sf, raster, smoothr, spatstat, RColorBrewer, viridis, stringr, classInt, spNetwork, tmap,lubridate, arrow, sp, dplyr, rvest, nngeo)
 ```
 
 
@@ -77,7 +76,7 @@ pacman::p_load(maptools, tidyverse, sf, raster, spatstat, tmap,lubridate, arrow,
 
 # **Importing Data**
 
-## Importing Aspatial Data
+## Importing Aspatial Data (Grab)
 
 ### Importing Grab-Posisi Dataset
 
@@ -89,16 +88,6 @@ grab <- read_parquet("data/apstial/GrabPosisi/part-00000.parquet")
 ```
 
 
-Now we will use glimpse() of dplyr package is used to display the structure of df tibble data.frame.
-
-
-```{r}
-glimpse(grab)
-```
-
-
-Notice that pingtimestamp is in wrong data type format. It should be in date/ time format and not integer.
-
 ## Importing Geospatial data
 
 ### Importing Master Plan 2019 Subzone Boundary (No Sea) from Data.gov.sg.
@@ -109,15 +98,10 @@ mpsz = st_read("data/geospatial/MasterPlan2019SubzoneBoundaryNoSeaKML.kml") %>%
   st_transform(crs=3414)
 ```
 
-```{r}
-glimpse(mpsz)
-```
-
-
 
 ### Importing data for Road data from OpenStreetMap
 
-In this case we will only be using road data?? \*\* To ask if we need road data or Bus or Mrt Only???
+In this case we will only be using the road data
 
 
 ```{r}
@@ -128,81 +112,19 @@ road <- st_read(dsn = "data/geospatial", layer = "gis_osm_roads_free_1") %>%
 
 # Data Preparation
 
-## Geospatial
+## Aspatial (grab)
 
-### Remove z coordinates from the 'road' and 'mpsz' spatial objects.
-
-
-```{r}
-road <- st_zm(road)
-```
-
-```{r}
-mpsz <- st_zm(mpsz)
-```
-
-
-Display summaries of the 'road' and 'mpsz' spatial objects.
+Now we will use glimpse() of dplyr package is used to display the structure of df tibble data.frame.
 
 
 ```{r}
-summary(road)
-```
-
-```{r}
-summary(mpsz)
+glimpse(grab)
 ```
 
 
-### Selecting and cleaning relevant information
+Notice that pingtimestamp is in wrong data type format. It should be in date/ time format and not integer.
 
-Filtering the fclass in road 
-
-Perform a spatial intersection between 'road' and 'mpsz', resulting in the 'road_sg' spatial object.
-
-
-```{r}
-road_sg <- st_intersection(road, mpsz)
-```
-
-
-Display a glimpse of the 'road_sg' spatial object.
-
-
-```{r}
-glimpse(road_sg)
-```
-
-
-Plot the 'road_sg' spatial object.
-
-
-```{r}
-plot(road_sg)
-```
-
-
-Creating the outline of Singapore
-
-
-```{r}
-mpsz <- mpsz %>%
-  st_union()
-```
-
-
-Plotting to visualise
-
-
-```{r}
-plot(mpsz)
-```
-
-
-
-## Aspatial
-
-### Converting data type to date/time format
+### Converting data type to date/time format for grab data
 
 Since pingtimestamp is in wrong data type format, we need to convert the data type of pingtimestamp from character to date-time.
 
@@ -220,11 +142,9 @@ write_rds(grab, "data/rds/part0.rds")
 ```
 
 
-### Selecting the relevant information for Grab
+# Task 1: Grab taxi location points either by origins or destinations.
 
-### Task 1: Grab taxi location points either by origins or destinations.
-
-### Extracting trips' origin locations
+## Extracting trips' origin locations
 
 
 ```{r}
@@ -242,6 +162,8 @@ origin_df <- grab %>%
 
 ## Extracting trips' destination locations
 
+Extracting trips' destination locations & converting destination_df into an sf tibble data.frame by using it’s location information.
+
 
 ```{r}
 destination_df <- grab %>%
@@ -253,10 +175,51 @@ destination_df <- grab %>%
                         abbr=TRUE),
          end_hr = factor(hour(pingtimestamp)),
          day = factor(mday(pingtimestamp)))
+
 ```
 
 
-Saving data from future use
+### Convert Aspatial to Geospatial for GrabPosisi
+
+Convert origin_df into an sf tibble data.frame by using it’s location information.
+
+
+```{r}
+origin_df <- st_as_sf(origin_df,
+                      coords = c("rawlng", "rawlat"),
+                      crs = 4326) %>%
+  st_transform(crs = 3414)
+```
+
+```{r}
+destination_df <- st_as_sf(destination_df,
+                      coords = c("rawlng", "rawlat"),
+                      crs = 4326) %>%
+  st_transform(crs = 3414)
+```
+
+
+## Selecting the relevant information for Grab
+
+In this case, we do not need variables like driving_mode, osname, speed, bearing, accuracy
+
+
+```{r}
+columns_to_drop <- c("driving_mode", "osname", "speed", "bearing", "accuracy")
+
+origin_df <- origin_df %>%
+  dplyr::select(-one_of(columns_to_drop))
+```
+
+```{r}
+columns_to_drop <- c("driving_mode", "osname", "speed", "bearing", "accuracy")
+
+destination_df <- destination_df %>%
+  dplyr::select(-one_of(columns_to_drop))
+```
+
+
+### Saving data from future use
 
 
 ```{r}
@@ -274,39 +237,11 @@ destination_df <- read_rds("data/rds/destination_df.rds")
 ```
 
 
-# **Data Preprocessing**
-
-## Aspatial Data
-
-### Convert Aspatial to Geospatial for GrabPosisi
-
-Convert origin_df into an sf tibble data.frame by using it’s location information.
-
-
-```{r}
-origin_sf <- st_as_sf(origin_df,
-                      coords = c("rawlng", "rawlat"),
-                      crs = 4326) %>%
-  st_transform(crs = 3414)
-```
-
-```{r}
-destination_sf <- st_as_sf(destination_df,
-                      coords = c("rawlng", "rawlat"),
-                      crs = 4326) %>%
-  st_transform(crs = 3414)
-```
-
-```{r}
-glimpse(origin_sf)
-```
-
-
 ### Visualising the data for Origin and Destination
 
 #### Visualising frequency distribution
 
-Here we are going to use ggplot functions are used to reveal the distribution of origin trips by day of the week. 
+Here we are going to use ggplot functions are used to reveal the distribution of origin trips by day of the week.
 
 
 ```{r}
@@ -331,32 +266,20 @@ ggplot(data=destination_df,
 
 ```{r}
 tmap_mode("plot")
-tm_shape(origin_sf) +
+tm_shape(origin_df) +
   tm_dots()
 ```
 
 ```{r}
 tmap_mode("plot")
-tm_shape(destination_sf) +
+tm_shape(destination_df) +
   tm_dots()
 ```
 
 
-## Project Transformation
+## Geospatial
 
-First we can check the content of a simple feature data frame
-
-Using st_geometry() The column in the sf data.frame that contains the geometries is a list, of class sfc. We can retrieve the geometry list-column.
-
-
-```{r}
-st_geometry(mpsz)
-```
-
-
-We can use this to double check if all the data is in projected coordinate system `SVY21`
-
-Using glimpse() to find the basic feature information
+### 1. mpsz data
 
 
 ```{r}
@@ -364,17 +287,184 @@ glimpse(mpsz)
 ```
 
 
+### Selecting and cleaning the data
+
+Using the rvest package, which is designed for web scraping but can also be useful for parsing HTML-like structures.
+
+
+```{r}
+mpsz <- mpsz %>%
+  mutate(Match = map(Description, ~ {
+    html <- read_html(.x)
+    data <- html_nodes(html, "td") %>% html_text() %>% trimws()
+    setNames(data, c("SUBZONE_NO", "SUBZONE_N", "SUBZONE_C", "CA_IND", "PLN_AREA_N", "PLN_AREA_C", "REGION_N", "REGION_C", "INC_CRC", "FMEL_UPD_D"))
+  })) %>%
+  unnest_wider(Match) %>%
+  st_as_sf()
+```
+
+
+Filtering and selecting only the relevant information
+
+
+```{r}
+mpsz <- mpsz %>% dplyr::select('Name', 'geometry', 'SUBZONE_NO', 'SUBZONE_N', 'PLN_AREA_N', 'PLN_AREA_C', 'REGION_N', 'REGION_C')
+```
+
+
+### Filtering out the invalid geometries and dropping the z coordinates
+
+Filters out invalid geometries, and the subsequent operations are performed on the remaining valid geometries. This approach can be more concise and may help avoid potential issues with invalid geometries.
+
+
+```{r}
+mpsz <- mpsz %>%
+  filter(st_is_valid(.)) %>%  # Filter out invalid geometries
+  st_make_valid() %>%         # Make valid
+  st_zm() 
+```
+
+
+### 2. Open Street Map (road) data
+
+### Selecting and cleaning relevant information
+
+Filtering road data using the fclass selection
+
+https://www.geofabrik.de/data/geofabrik-osm-gis-standard-0.3.pdf
+
+
+```{r}
+selected_data <- c("service", "tertiary", "primary_link", "motorway", "motorway_link", "tertiary_link", "living_street", "trunk", "trunk_link", "primary", "secondary", "residential")
+
+road <- subset(road, fclass %in% selected_data)
+```
+
+
+# Boundary of SG
+
+## Outer island removal and hole fixing
+
+The code removes the outer islands from the mpsz object and fills any holes in the remaining polygon. The resulting polygon is then converted to an sf object and plotted.
+
+Combine geometries and cast to POLYGON
+
+
+```{r}
+unioned_polygon <- st_union(mpsz) %>%
+  st_cast("POLYGON")
+```
+
+
+Fill holes in the unioned polygon with a threshold of 1 square kilometer
+
+
+```{r}
+filled_polygon <- fill_holes(unioned_polygon, units::set_units(1, "km^2"))
+```
+
+
+Convert filled polygon to Simple Features (SF) object
+
+
+```{r}
+filled_sf <- st_as_sf(filled_polygon)
+```
+
+
+Plotting to visualise
+
+
+```{r}
+# Set up a side-by-side plot
+par(mfrow = c(1, 2))
+
+# Plot the original geometry
+plot(st_geometry(mpsz), main = "Original Geometry")
+
+# Plot the merged geometry with holes filled
+plot(st_geometry(filled_sf), main = "Merged with Holes Filled")
+```
+
+
+## Creating an owin object (applying the outline)
+
+The code creates an owin object from the merged polygon. This object is used to remove data on Malaysian and Bruneian roads from the osm object.
+
+Then the code reads in the owin object and uses it to remove the data on Malaysian and Bruneian roads from the osm object.
+
+
+```{r}
+# Convert filled_sf to Spatial object for spatstat compatibility
+merged_spatial <- as_Spatial(filled_sf)
+
+# Convert Spatial object to SpatialPolygons
+outline_polygons <- as(merged_spatial, "SpatialPolygons")
+
+# Convert SpatialPolygons to owin object
+outline_owin <- as(outline_polygons, "owin")
+
+# Save the owin object to an RDS file for future use
+write_rds(outline_owin, "data/rds/outline_owin.rds")
+
+# Read the saved owin object from the RDS file
+outline_owin <- read_rds("data/rds/outline_owin.rds")
+
+# Use the outline to spatially constrain the road data
+road_sg <- st_intersection(road, filled_sf)
+```
+
+
+Let us check the summary of road_sg
+
+
+```{r}
+road_sg_summary <- summary(road_sg)
+```
+
+
+I realised that some shapes were stored as multilinestrings which might cause the error in calculations. Hence, we need to split the multilinestrings into separate linestrings.
+
+Identify and convert MULTILINESTRINGs to LINESTRINGs
+
+
+```{r}
+road_sg <- st_cast(st_cast(road_sg, "MULTILINESTRING"), "LINESTRING")
+```
+
+
+Check the summary of the processed road_sg
+
+
+```{r}
+processed_road_sg_summary <- summary(road_sg)
+```
+
+
+Now lets us save it in rds
+
+
+```{r}
+write_rds(road_sg, "data/rds/road_sg.rds")
+road_sg <- read_rds("data/rds/road_sg.rds")
+```
+
+
+# **Data Preprocessing**
+
+## Project Transformation
+
 Before, we proceed lets use double check and make sure that all the data are projected in the same projection system.
 
 We can do so using st_crs() function
 
 
 ```{r}
-st_crs(origin_sf)
+st_crs(origin_df)
 ```
 
 ```{r}
-st_crs(destination_sf)
+st_crs(destination_df)
 ```
 
 ```{r}
@@ -382,74 +472,36 @@ st_crs(road_sg)
 ```
 
 
-# Mapping the geospatial data sets
-
-After we check the geospatial data set, we can plot a map to show the spatial patterns
-
-
-```{r}
-tmap_mode("plot")
-```
-
-
-Plotting the mpsz data
-
-
-```{r}
-tm_shape(mpsz) +
-  tm_polygons()
-```
-
-
-Plotting road data
-
-
-```{r}
-tm_shape(road_sg)+
-  tm_lines()
-```
-
-
-Mpaaing both origin and mpsz:
-
-
-```{r}
-tmap_mode("plot")
-tm_shape(origin_df) +
-  tm_dots() +
-tm_shape(mpsz) +
-  tm_polygons()
-```
-
-
-
 # Data Wrangling
 
-## Converting sf data frames to sp’s Spatial\* class
+## Converting to sp’s Spatial\* class
 
-Uses as_Spatial() of sf package to convert the three geospatial data from simple feature data frame to sp’s Spatial* class.
+Uses as_Spatial() of sf package to convert to sp’s Spatial\* class.
 
 
 ```{r}
-origin_sf <- as_Spatial(origin_sf)
-mpsz <- as_Spatial(mpsz)
-road_sg <- as_Spatial(road_sg)
+origin <- as_Spatial(origin_df)
+destination <- as_Spatial(destination_df)
 ```
 
 
-Now, we will display the information about these 3 Spatial\* class
+Now, we will display the information about these Spatial\* class
 
 
 ```{r}
-origin_sf
+origin
 ```
 
 ```{r}
-mpsz
+destination
 ```
 
 ```{r}
-road_sg
+plot(origin)
+```
+
+```{r}
+plot(destination)
 ```
 
 
@@ -457,13 +509,12 @@ We can see and make sure that the geospatial data have been converted into their
 
 ## Converting the Spatial\* class into generic sp format
 
-spatstat requires the analytical data in ppp object form. There is no direct way to convert a Spatial* classes into ppp object. We need to convert the Spatial classes* into Spatial object first.
+spatstat requires the analytical data in ppp object form. There is no direct way to convert a Spatial\* classes into ppp object. We need to convert the Spatial classes\* into Spatial object first.
 
 
 ```{r}
-origin_sp <- as(origin_sf, "SpatialPoints")
-roadsg_sp <- as(road_sg, "SpatialLines")
-mpsz_sp <- as(mpsz, "SpatialPolygons")
+origin_sp <- as(origin, "SpatialPoints")
+destination_sp <- as(destination, "SpatialPoints")
 ```
 
 
@@ -475,11 +526,7 @@ origin_sp
 ```
 
 ```{r}
-roadsg_sp
-```
-
-```{r}
-mpsz_sp
+destination_sp
 ```
 
 
@@ -487,8 +534,8 @@ mpsz_sp
 
 
 ```{r}
-origin_ppp <- as(orgin_sp, "ppp")
-origin_ppp
+origin_ppp <- as(origin_sp, "ppp")
+destination_ppp <- as(destination_sp, "ppp")
 ```
 
 
@@ -499,12 +546,20 @@ Lets plot to examine:
 plot(origin_ppp)
 ```
 
+```{r}
+plot(destination_ppp)
+```
+
 
 Lets look at the summary statistics of the newly created ppp object:
 
 
 ```{r}
 summary(origin_ppp)
+```
+
+```{r}
+summary(destination_ppp)
 ```
 
 
@@ -519,12 +574,20 @@ To check the duplication in a ppp object:
 any(duplicated(origin_ppp))
 ```
 
+```{r}
+any(duplicated(destination_ppp))
+```
+
 
 To count the number of co-indicence point, we will use the multiplicity() function:
 
 
 ```{r}
 multiplicity(origin_ppp)
+```
+
+```{r}
+multiplicity(destination_ppp)
 ```
 
 
@@ -535,64 +598,38 @@ How many locations have more than one point event
 sum(multiplicity(origin_ppp) > 1)
 ```
 
-
-Lets view the locations of these duplicate point events
-
-
 ```{r}
-tmap_mode('view')
-tm_shape(origin_sf) +
-  tm_dots(alpha=0.4, 
-          size=0.05)
+sum(multiplicity(destination_ppp) > 1)
 ```
 
 
-## Handling duplicated points
+## Combining point events object and owin object
 
-### Jittering
-
-which will add a small perturbation to the duplicate points so that they do not occupy the exact same space.
+Filters points in origin_ppp and destination_ppp to retain only those within the spatial boundaries defined by outline_owin, effectively constraining the points to a specific region, likely Singapore.
 
 
 ```{r}
-origin_ppp_jit <- rjitter(origin_ppp, 
-                             retry=TRUE, 
-                             nsim=1, 
-                             drop=TRUE)
+origin_ppp <- origin_ppp[outline_owin]
 ```
 
 
-Check if there is still any duplicate points
+Let's us take a look at how origin looks like
 
 
 ```{r}
-any(duplicated(origin_ppp_jit))
+plot(origin_ppp)
+```
+
+```{r}
+destination_ppp <- destination_ppp[outline_owin]
 ```
 
 
-# Creating an owin object 
-
-## Creating coastal outline
+Let's us take a look at how destination looks like
 
 
 ```{r}
-sg_owin <- as(mpsz, "owin")
-```
-
-
-This is for mpsz need to map the outline first
-
-
-```{r}
-summary(sg_owin)
-```
-
-
-# Combining point events object and owin object
-
-
-```{r}
-originSG_ppp = origin_ppp[sg_owin]
+plot(destination_ppp)
 ```
 
 
@@ -600,7 +637,11 @@ Now let's take a look at the output
 
 
 ```{r}
-summary(originSG_ppp)
+summary(origin_ppp)
+```
+
+```{r}
+summary(destination_ppp)
 ```
 
 
@@ -608,72 +649,194 @@ summary(originSG_ppp)
 
 ## Kernel Density Estimation
 
-### Computing kernel density estimation using automatic bandwidth selection method
+### Rescalling KDE values
+
+Rescale the spatial coordinates of the origin & desination point pattern to kilometers
 
 
 ```{r}
-kde_originSG_bw <- density(originSG_ppp,
+origin_ppp.km <- rescale(origin_ppp, 1000, "km")
+```
+
+```{r}
+destination_ppp.km <- rescale(destination_ppp, 1000, "km")
+```
+
+
+Computes a kernel density by using the following configurations of [*density()*](https://rdrr.io/cran/spatstat/man/density.ppp.html) of **spatstat**:
+
+-   [*bw.diggle()*](https://rdrr.io/cran/spatstat/man/bw.diggle.html) automatic bandwidth selection method. Other recommended methods are [*bw.CvL()*](https://rdrr.io/cran/spatstat/man/bw.CvL.html), [*bw.scott()*](https://rdrr.io/cran/spatstat/man/bw.scott.html) or [*bw.ppl()*](https://rdrr.io/cran/spatstat/man/bw.ppl.html).
+
+-   The smoothing kernel used is *gaussian*, which is the default. Other smoothing methods are: “epanechnikov”, “quartic” or “disc”.
+
+-   The intensity estimate is corrected for edge effect bias by using method described by Jones (1993) and Diggle (2010, equation 18.9). The default is *FALSE*.
+
+
+```{r}
+kde_origin_bw <-  density(origin_ppp.km,
                               sigma=bw.diggle,
                               edge=TRUE,
                             kernel="gaussian") 
 ```
 
 ```{r}
-plot(kde_originSG_bw)
-```
-
-```{r}
-bw <- bw.diggle(originSG_ppp)
-bw
-```
-
-
-### Rescalling KDE values
-
-
-```{r}
-originSG_ppp.km <- rescale(originSG_ppp, 1000, "km")
-```
-
-```{r}
-kde_originSG.bw <- density(originSG_ppp.km, sigma=bw.diggle, edge=TRUE, kernel="gaussian")
-plot(kde_originSG.bw)
+kde_destination_bw <-  density(destination_ppp.km,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="gaussian") 
 ```
 
 
-### Working with different automatic Bandwidth methods
+Using plot() to display the kernel density derived
 
 
 ```{r}
-
-```
-
-
-### Working with different kernel methods
-
-
-
-```{r}
-
+plot(kde_origin_bw)
 ```
 
 ```{r}
+plot(kde_destination_bw)
+```
+
+
+### Using quartic
+
+
+```{r}
+kde_origin_bw_quartic <-  density(origin_ppp.km,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="quartic") 
+```
+
+```{r}
+kde_destination_bw_quartic <-  density(destination_ppp.km,
+                              sigma=bw.diggle,
+                              edge=TRUE,
+                            kernel="quartic") 
+```
+
+
+Using plot() to display the kernel density derived
+
+
+```{r}
+plot(kde_origin_bw)
+```
+
+```{r}
+plot(kde_destination_bw)
+```
+
+### Calculating Bandwidth
+
+Let us take a look at the bandwidth return:
+
+
+```{r}
+bw.ppl(origin_ppp.km)
+```
+
+```{r}
+bw.diggle(origin_ppp.km)
+```
+
+```{r}
+bw.ppl(destination_ppp.km)
+```
+
+```{r}
+bw.diggle(destination_ppp.km)
+```
+
+
+Comparing between the different output
+
+
+```{r}
+kde_origin.ppl <- density(origin_ppp.km, 
+                               sigma=bw.ppl, 
+                               edge=TRUE,
+                               kernel="gaussian")
+par(mfrow=c(1,2))
+plot(kde_origin_bw, main = "bw.diggle")
+plot(kde_origin.ppl, main = "bw.ppl")
+```
+
+```{r}
+kde_destination.ppl <- density(destination_ppp.km, 
+                               sigma=bw.ppl, 
+                               edge=TRUE,
+                               kernel="gaussian")
+par(mfrow=c(1,2))
+plot(kde_destination_bw, main = "bw.diggle")
+plot(kde_destination.ppl, main = "bw.ppl")
+```
+
+```{r}
+sigma_scale <- 0.65
+origin_ppp.km <- rescale(origin_ppp, 1000, "km")
+
+origin.bw <- density(origin_ppp.km,
+                              sigma=sigma_scale,
+                              edge=TRUE,
+                            kernel="gaussian") 
+plot(origin.bw)
 
 ```
 
 ```{r}
+destination_ppp.km <- rescale(destination_ppp, 1000, "km")
 
+destination.bw <- density(destination_ppp.km,
+                              sigma=sigma_scale,
+                              edge=TRUE,
+                            kernel="gaussian") 
+plot(destination.bw)
 ```
+
+
+Zones to choose for NKDE: "WOODLANDS", "BUKIT MERAH", "CHANGI" , "SEMBAWANG", "YISHUN"
+
+
+
+```{r}
+sort(unique(mpsz$PLN_AREA_N))
+```
+
+
+# NKDE
+
+## Preparing data
+
+# Restrict the area of our NKDE to CHANGI
+mpsz_changi <- mpsz %>% filter(PLN_AREA_N == "CHANGI")
+
+# Remove small rocks or outer islands on the map by taking the intersection with merged_sg (Our outline)
+mpsz_changi <- st_intersection(mpsz_changi, merged_sf)
+
+# Take only the roads that come into contact with Changi
+osm_changi <- st_intersection(osm_sg, mpsz_changi)
+
+# Take only the events that happened within Changi
+destination_df.changi <- st_intersection(destination_df, mpsz_changi)
+origin_df.changi <- st_intersection(origin_df, mpsz_changi)
+
+# As part of NKDE, the events need to have happened on the network. As such, we use snapPointsToLines2 to ensure that the points are on the network. Points off the network may have occurred due to slight GPS drift.
+origin_df.changi.snapped <- snapPointsToLines2(origin_df.changi, osm_changi)
+destination_df.changi.snapped <- snapPointsToLines2(destination_df.changi, osm_changi)
+
+# Visualize the events at Changi, especially the airport
+tm_shape(osm_changi) + 
+  tm_lines() +
+tm_shape(destination_df.changi.snapped) +
+  tm_dots(col = "red") +
+tm_shape(origin_df.changi.snapped) +
+  tm_dots(col = "blue")
+
 
 ```{r}
 
-```
-
-```{r}
-
-```
-
-```{r}
 
 ```
 

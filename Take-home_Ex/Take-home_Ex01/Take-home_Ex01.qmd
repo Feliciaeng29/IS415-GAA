@@ -1351,8 +1351,6 @@ The NKDE map for Bukit Merah reveals a noticeable trend where a significant numb
 
 # Reflection
 
+Throughout this assignment, I encountered numerous challenges that posed significant obstacles along the way. The overall difficulty level was high, leading to a initial sad and tiring experience. Despite the persistent errors and obstacles, I must acknowledge that this assignment has been a tremendous learning opportunity. While the journey was exhausting and marked by moments of wanting to give up due to repeated unsuccessful attempts, the fulfillment at the conclusion is deeply gratifying. I am thankful and appreciative that I was ultimately able to complete the assignment.
 
 
-```{r}
-
-```

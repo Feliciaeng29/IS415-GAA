@@ -962,7 +962,7 @@ for (style in styles) {
 
 ```{r}
 # Restrict the area of our NKDE to CHANGI
-bukit_merah <- mpsz %>% filter(PLN_AREA_N == "CHANGI")
+changi <- mpsz %>% filter(PLN_AREA_N == "CHANGI")
 ```
 
 ```{r}

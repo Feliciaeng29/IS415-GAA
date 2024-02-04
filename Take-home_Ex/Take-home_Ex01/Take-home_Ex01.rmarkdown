@@ -56,6 +56,10 @@ The different R packages used:
 
 8.  **pacman**: The **`pacman`** package is a convenient tool for managing and loading R packages. It allows you to install and load multiple packages in a single line of code.
 
+9.  **rvest**: It is useful for parsing HTML-like structures.
+
+10. **RColorBrewe** to change the color palette for tmaps.
+
 
 ```{r}
 pacman::p_load(maptools, tmap, tidyverse, sf, raster, smoothr, spatstat, RColorBrewer, viridis, stringr, classInt, spNetwork, tmap,lubridate, arrow, sp, dplyr, rvest, nngeo)
@@ -146,6 +150,8 @@ write_rds(grab, "data/rds/part0.rds")
 
 ## Extracting trips' origin locations
 
+This code extracts the first row of each group in the "grab" dataset based on the "trj_id," and then adds new columns representing the weekday, starting hour, and day of the month derived from the "pingtimestamp" column.
+
 
 ```{r}
 origin_df <- grab %>% 
@@ -191,6 +197,10 @@ origin_df <- st_as_sf(origin_df,
   st_transform(crs = 3414)
 ```
 
+
+Convert destination_df into an sf tibble data.frame by using it’s location information.
+
+
 ```{r}
 destination_df <- st_as_sf(destination_df,
                       coords = c("rawlng", "rawlat"),
@@ -201,7 +211,7 @@ destination_df <- st_as_sf(destination_df,
 
 ## Selecting the relevant information for Grab
 
-In this case, we do not need variables like driving_mode, osname, speed, bearing, accuracy
+In this case, we do not need variables like driving_mode, osname, speed, bearing, accuracy in our assignment. Hence, we will be dropping this variable to save memory space
 
 
 ```{r}
@@ -220,6 +230,8 @@ destination_df <- destination_df %>%
 
 
 ### Saving data from future use
+
+Lets saves the "origin_df" and "destination_df" data frames as RDS (R Data Serialization) files for future use and then imports them back into R from the saved RDS files.
 
 
 ```{r}
@@ -263,23 +275,31 @@ ggplot(data=destination_df,
 
 #### Visualising as Point Symbol Map
 
+Lets take a look at just the origins points on the map.
+
 
 ```{r}
 tmap_mode("plot")
 tm_shape(origin_df) +
-  tm_dots()
+  tm_dots(col = "red")
 ```
+
+
+Lets take a look at just the destinations points on the map.
+
 
 ```{r}
 tmap_mode("plot")
 tm_shape(destination_df) +
-  tm_dots()
+  tm_dots(col = "red")
 ```
 
 
 ## Geospatial
 
 ### 1. mpsz data
+
+Lets take a look at the strcuture and summary of mpsz
 
 
 ```{r}
@@ -289,7 +309,9 @@ glimpse(mpsz)
 
 ### Selecting and cleaning the data
 
-Using the rvest package, which is designed for web scraping but can also be useful for parsing HTML-like structures.
+Now we will use the rvest package, which is designed for web scraping but can also be useful for parsing HTML-like structures.
+
+Using the mutate function from the dplyr package along with the map and unnest_wider functions from the purrr and tidyr packages to process the "Description" column in the "mpsz" data frame. It extracts information from HTML content within each cell of the "Description" column, assigns meaningful names to the extracted values, unnests the resulting data, and converts it to a spatial feature (sf) object using st_as_sf(). This process is commonly used for web scraping tabular data and creating spatial objects in R.
 
 
 ```{r}
@@ -333,6 +355,8 @@ Filtering road data using the fclass selection
 
 https://www.geofabrik.de/data/geofabrik-osm-gis-standard-0.3.pdf
 
+According to the link, we will only retain this data as data like steps, path or footway will not be necessary in the later part of the assignment.
+
 
 ```{r}
 selected_data <- c("service", "tertiary", "primary_link", "motorway", "motorway_link", "tertiary_link", "living_street", "trunk", "trunk_link", "primary", "secondary", "residential")
@@ -345,7 +369,7 @@ road <- subset(road, fclass %in% selected_data)
 
 ## Outer island removal and hole fixing
 
-The code removes the outer islands from the mpsz object and fills any holes in the remaining polygon. The resulting polygon is then converted to an sf object and plotted.
+Now we removes the outer islands from the mpsz object and fills any holes in the remaining polygon. The resulting polygon is then converted to an sf object and plotted.
 
 Combine geometries and cast to POLYGON
 
@@ -389,9 +413,9 @@ plot(st_geometry(filled_sf), main = "Merged with Holes Filled")
 
 ## Creating an owin object (applying the outline)
 
-The code creates an owin object from the merged polygon. This object is used to remove data on Malaysian and Bruneian roads from the osm object.
+Now we will create an owin object from the merged polygon. This object is used to remove data on Malaysian and Bruneian roads from the osm object.
 
-Then the code reads in the owin object and uses it to remove the data on Malaysian and Bruneian roads from the osm object.
+Then we read in the owin object and uses it to remove the data on Malaysian and Bruneian roads from the osm object.
 
 
 ```{r}
@@ -415,7 +439,7 @@ road_sg <- st_intersection(road, filled_sf)
 ```
 
 
-Let us check the summary of road_sg
+Let us take a look and check the summary of road_sg
 
 
 ```{r}
@@ -423,9 +447,9 @@ road_sg_summary <- summary(road_sg)
 ```
 
 
-I realised that some shapes were stored as multilinestrings which might cause the error in calculations. Hence, we need to split the multilinestrings into separate linestrings.
+I noticed that certain shapes were stored as multilinestrings, potentially leading to calculation errors. To address this, we should split the multilinestrings into individual linestrings.
 
-Identify and convert MULTILINESTRINGs to LINESTRINGs
+Identify and transform MULTILINESTRINGs into LINESTRINGs:
 
 
 ```{r}
@@ -433,7 +457,7 @@ road_sg <- st_cast(st_cast(road_sg, "MULTILINESTRING"), "LINESTRING")
 ```
 
 
-Check the summary of the processed road_sg
+Check the summary of it after changing multi to linestrings
 
 
 ```{r}
@@ -456,7 +480,7 @@ road_sg <- read_rds("data/rds/road_sg.rds")
 
 Before, we proceed lets use double check and make sure that all the data are projected in the same projection system.
 
-We can do so using st_crs() function
+We can do so using st_crs() function. In this case we need to make sure that all of them are SVY21.
 
 
 ```{r}
@@ -603,6 +627,8 @@ sum(multiplicity(destination_ppp) > 1)
 ```
 
 
+In this case we can see that there are no duplicates in both the origin_ppp and desitination_ppp. Hence, jittering is not needed in this case.
+
 ## Combining point events object and owin object
 
 Filters points in origin_ppp and destination_ppp to retain only those within the spatial boundaries defined by outline_owin, effectively constraining the points to a specific region, likely Singapore.
@@ -640,6 +666,10 @@ Now let's take a look at the output
 summary(origin_ppp)
 ```
 
+
+Let's do the same for destination.
+
+
 ```{r}
 summary(destination_ppp)
 ```
@@ -671,6 +701,8 @@ Computes a kernel density by using the following configurations of [*density()*]
 
 -   The intensity estimate is corrected for edge effect bias by using method described by Jones (1993) and Diggle (2010, equation 18.9). The default is *FALSE*.
 
+Let's calculate kernel density estimates (kde) for point patterns (origin_ppp.km and destination_ppp.km) using a Gaussian kernel and a specified bandwidth (bw.diggle).
+
 
 ```{r}
 kde_origin_bw <-  density(origin_ppp.km,
@@ -687,12 +719,16 @@ kde_destination_bw <-  density(destination_ppp.km,
 ```
 
 
-Using plot() to display the kernel density derived
+Using plot() to display display the kernel density derived for the origin point pattern (bw.diggle)
 
 
 ```{r}
 plot(kde_origin_bw)
 ```
+
+
+Using plot() to display display the kernel density derived for the destination point pattern (bw.diggle)
+
 
 ```{r}
 plot(kde_destination_bw)
@@ -700,6 +736,8 @@ plot(kde_destination_bw)
 
 
 ### Using quartic
+
+Now let's try using kernel density estimates (kde) that are calculated for point patterns (origin_ppp.km and destination_ppp.km) using a **quartic** kernel and a specified bandwidth (bw.diggle).
 
 
 ```{r}
@@ -717,17 +755,22 @@ kde_destination_bw_quartic <-  density(destination_ppp.km,
 ```
 
 
-Using plot() to display the kernel density derived
+Using plot() to display display the kernel density derived for the origin point pattern for quartic.
 
 
 ```{r}
 plot(kde_origin_bw)
 ```
 
+
+Using plot() to display display the kernel density derived for the destination point pattern for quartic
+
+
 ```{r}
 plot(kde_destination_bw)
 ```
 
+
 ### Calculating Bandwidth
 
 Let us take a look at the bandwidth return:
@@ -752,6 +795,8 @@ bw.diggle(destination_ppp.km)
 
 Comparing between the different output
 
+We can see that there is not much different between the 2 bw.diggle and bw.ppl
+
 
 ```{r}
 kde_origin.ppl <- density(origin_ppp.km, 
@@ -763,6 +808,10 @@ plot(kde_origin_bw, main = "bw.diggle")
 plot(kde_origin.ppl, main = "bw.ppl")
 ```
 
+
+Similar to the origin, for destination we can see that there is not much different between the 2 bw.diggle and bw.ppl.
+
+
 ```{r}
 kde_destination.ppl <- density(destination_ppp.km, 
                                sigma=bw.ppl, 
@@ -772,6 +821,10 @@ par(mfrow=c(1,2))
 plot(kde_destination_bw, main = "bw.diggle")
 plot(kde_destination.ppl, main = "bw.ppl")
 ```
+
+
+I have manually adjusted the sigma scale to 0.65, as the density is almost consistent across the entire map. As such I decide to play around and rescales the origin point pattern to kilometers and calculates the kernel density estimate (origin.bw) using a Gaussian kernel with the specified sigma scale. I think this will give a better gauge as a whole.
+
 
 ```{r}
 sigma_scale <- 0.65
@@ -785,6 +838,10 @@ plot(origin.bw)
 
 ```
 
+
+I did the same thing for destination as well.
+
+
 ```{r}
 destination_ppp.km <- rescale(destination_ppp, 1000, "km")
 
@@ -796,47 +853,664 @@ plot(destination.bw)
 ```
 
 
-Zones to choose for NKDE: "WOODLANDS", "BUKIT MERAH", "CHANGI" , "SEMBAWANG", "YISHUN"
+**Upon thorough examination of the KDE maps, several notable insights become apparent**:
 
+-   The upper section of the map reveals a concentration of frequent travels around the Woodlands area. Originating and concluding at Woodlands, this pattern suggests a significant volume of cross-border commuting between Singapore and Malaysia, likely for work purposes.
 
-
-```{r}
-sort(unique(mpsz$PLN_AREA_N))
-```
-
+-   Positioned on the right side of the map, Changi Airport emerges prominently as a major origin and destination. This indicates substantial travel activity associated with air travel. It is plausible that Grab is a preferred mode of transportation for individuals traveling to and from the airport.
+
+-   In the central bottom half of Singapore, which is likely near Bukit Merah, the proximity to the central area explains a notable volume of trips. This could be attributed to commuters traveling for work and tourists exploring popular areas like Orchard and Marina Bay. The convenience of accessing tourist hotspots may contribute to the high travel demand in this region.
+
+Hence, I decide to just focus on this 3 zones for the NKDE areas.
+Focus areas: "WOODLANDS", "BUKIT MERAH", "CHANGI"
 
 # NKDE
 
-## Preparing data
+## Selecting data for NKDE
 
-# Restrict the area of our NKDE to CHANGI
-mpsz_changi <- mpsz %>% filter(PLN_AREA_N == "CHANGI")
+Zones to choose for NKDE: "WOODLANDS", "BUKIT MERAH", "CHANGI"
 
-# Remove small rocks or outer islands on the map by taking the intersection with merged_sg (Our outline)
-mpsz_changi <- st_intersection(mpsz_changi, merged_sf)
+## Preparing the relevant and selected data for NKDE
 
-# Take only the roads that come into contact with Changi
-osm_changi <- st_intersection(osm_sg, mpsz_changi)
+### Woodlands
 
-# Take only the events that happened within Changi
-destination_df.changi <- st_intersection(destination_df, mpsz_changi)
-origin_df.changi <- st_intersection(origin_df, mpsz_changi)
-
-# As part of NKDE, the events need to have happened on the network. As such, we use snapPointsToLines2 to ensure that the points are on the network. Points off the network may have occurred due to slight GPS drift.
-origin_df.changi.snapped <- snapPointsToLines2(origin_df.changi, osm_changi)
-destination_df.changi.snapped <- snapPointsToLines2(destination_df.changi, osm_changi)
-
-# Visualize the events at Changi, especially the airport
-tm_shape(osm_changi) + 
-  tm_lines() +
-tm_shape(destination_df.changi.snapped) +
-  tm_dots(col = "red") +
-tm_shape(origin_df.changi.snapped) +
-  tm_dots(col = "blue")
+Extract the Woodlands area from the MPSZ dataset.
 
 
 ```{r}
+woodlands <- mpsz %>% filter(PLN_AREA_N == "WOODLANDS")
+```
+
 
+Remove small rocks or outer islands on the map by taking the intersection with our outline (filled_sf)
+Intersect the Woodlands area with the specified outline to eliminate small rocks or outer islands.
+
+
+```{r}
+woodlands <- st_intersection(woodlands, filled_sf)
+```
+
+
+Take only the roads that come into contact with Woodlands. Extract roads that intersect with the Woodlands area from the road dataset.
+
+
+```{r}
+woodlands_road <- road_sg[road_sg$osm_id %in% as.numeric(st_intersection(road_sg, woodlands)$osm_id), ]
+```
+
+
+Visualize the roads in the Woodlands area.
+
+
+```{r}
+plot(woodlands_road)
+```
+
+
+Extract origin events that intersect with the Woodlands area.
+
+
+```{r}
+# Take only the events that happened within Woodlands (origin)
+woodlands_origin <- st_intersection(origin_df, woodlands)
+plot(woodlands_origin)
+```
+
+
+Snap origin points to the road network in the Woodlands area
+
+
+```{r}
+woodlands_origin <- snapPointsToLines2(woodlands_origin, woodlands)
+plot(woodlands_origin)
+```
+
+
+Extract destination events that intersect with the Woodlands area.
+
+
+```{r}
+# Take only the events that happened within Woodlands (destination)
+woodlands_destination <- st_intersection(destination_df, woodlands)
+plot(woodlands_destination)
+```
+
+
+Snap destination points to the road network in the Woodlands area.
+
+
+```{r}
+woodlands_destination <- snapPointsToLines2(woodlands_destination, woodlands)
+plot(woodlands_destination)
+```
+
+
+Visualize the events at Changi, especially the airport
+
+
+```{r}
+tm_shape(woodlands_road) + 
+  tm_lines() +
+tm_shape(woodlands_destination) +
+  tm_dots(col = "red") +
+tm_shape(woodlands_origin) +
+  tm_dots(col = "green")
+```
+
+
+## Calculating NKDE
+
+### NKDE Woodlands Origin
+
+
+```{r}
+lixels <- lixelize_lines(woodlands_road,
+                         150,
+                         mindist = 100)
+```
+
+```{r}
+samples <- lines_center(lixels)
+```
+
+```{r}
+origin_densities_woodlands <- nkde(woodlands_road,
+                  events=woodlands_origin,
+                  w=rep(1, nrow(woodlands_origin)),
+                  samples=samples,
+                  kernel_name="quartic",
+                  bw=300,
+                  div="bw",
+                  method="simple",
+                  digits=1,
+                  tol=1,
+                  grid_shape=c(1,1),
+                  max_depth = 8,
+                  agg=5,
+                  sparse=TRUE,
+                  verbose = FALSE,
+                  study_area = woodlands)
+```
+
+```{r}
+samples$origin_nkde <- origin_densities_woodlands*1000
+lixels$origin_nkde <- origin_densities_woodlands*1000
+```
+
+```{r}
+samples_origin <- samples[order(samples$origin_nkde),]
+```
+
+```{r}
+tm_shape(lixels) + 
+  tm_lines(col="origin_nkde")
+```
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Define the styles
+styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
+
+# Create a multi-panel plot
+par(mfrow = c(2, 3))  # Adjust as needed
+for (style in styles) {
+  print(
+    tm_shape(woodlands_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_origin) + 
+      tm_dots("origin_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +
+      tm_layout(main.title = paste('Woodlands Origins NKDE (', style, ')'), main.title.size = 1)
+  )
+}
+```
+
+
+### NKDE Woodlands Destination
+
+
+```{r}
+destination_densities_woodlands <- nkde(woodlands_road,
+                  events=woodlands_destination,
+                  w=rep(1, nrow(woodlands_destination)),
+                  samples=samples,
+                  kernel_name="quartic",
+                  bw=300,
+                  div="bw",
+                  method="simple",
+                  digits=1,
+                  tol=1,
+                  grid_shape=c(1,1),
+                  max_depth = 8,
+                  agg=5,
+                  sparse=TRUE,
+                  verbose = FALSE,
+                  study_area = woodlands)
+```
+
+```{r}
+samples$destination_nkde <- destination_densities_woodlands*1000
+lixels$destination_nkde <- destination_densities_woodlands*1000
+```
+
+```{r}
+samples_destination <- samples[order(samples$destination_nkde),]
+```
+
+```{r}
+tm_shape(lixels) + 
+  tm_lines(col="destination_nkde")
+```
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Define the styles
+styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
+
+# Create a multi-panel plot
+par(mfrow = c(2, 3))  # Adjust as needed
+for (style in styles) {
+  print(
+    tm_shape(woodlands_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_destination) + 
+      tm_dots("destination_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +
+      tm_layout(main.title = paste('Woodlands Destinations NKDE (', style, ')'), main.title.size = 1)
+  )
+}
 
 ```
+
+** Overview of Woodlands NKDE**:
+-   Building upon the earlier inference, supported by the NKDE, it's evident that there are significant origins and destinations around the Woodlands checkpoint area. Notably, there are more Grab origins than destinations in this region.
+-   A closer examination reveals that the points are dispersed across Woodlands as a whole, not solely concentrated around the checkpoint. Notably, destination points cluster near Marsiling and Woodlands MRT areas.
+-   While origin points are also present near Marsiling and Woodlands MRT areas, there is a higher concentration, particularly around the Woodlands checkpoint, suggesting a distinctive pattern in Grab pickups in this specific location.
+
+** Possible Insights**:
+-   The higher concentration of Grab origins near the Woodlands checkpoint area might be indicative of commuters crossing the border between Singapore and Malaysia, possibly for work or other regular activities.
+
+-   The dispersed nature of points across Woodlands suggests that Grab services cater to various destinations within the entire region, not limited to specific hotspots, contributing to the overall accessibility of transportation.
+
+-   The clustering of destination points near Marsiling and Woodlands MRT areas indicates potential transportation hubs or popular drop-off locations, possibly reflecting a preference for public transit connections or specific destinations in these areas.
+
+-     The disparity in the number of origins and destinations, especially around the Woodlands checkpoint, may be influenced by the nature of travel patterns, with more individuals preferring Grab for the initial leg of their journey, possibly due to convenience or specific commuting needs.
+
+
+### Changi
+
+
+```{r}
+# Restrict the area of our NKDE to CHANGI
+changi <- mpsz %>% filter(PLN_AREA_N == "CHANGI")
+```
+
+```{r}
+# Remove small rocks or outer islands on the map by taking the intersection with our outline (filled_sf)
+changi <- st_intersection(changi, filled_sf)
+```
+
+```{r}
+# Take only the roads that come into contact with Changi
+changi_road <- road_sg[road_sg$osm_id %in% as.numeric(st_intersection(road_sg, changi)$osm_id), ]
+```
+
+```{r}
+plot(changi_road)
+```
+
+```{r}
+# Take only the events that happened within Changi (origin)
+changi_origin <- st_intersection(origin_df, changi)
+plot(changi_origin)
+```
+
+
+As part of NKDE, the events need to have happened on the network. As such, we use snapPointsToLines2 to ensure that the points are on the network. Points off the network may have occurred due to slight GPS drift.
+
+
+```{r}
+changi_origin <- snapPointsToLines2(changi_origin, changi)
+plot(changi_origin)
+```
+
+```{r}
+# Take only the events that happened within Changi (destination)
+changi_destination <- st_intersection(destination_df, changi)
+plot(changi_destination)
+```
+
+```{r}
+changi_destination <- snapPointsToLines2(changi_destination, changi)
+plot(changi_destination)
+```
+
+```{r}
+# Visualize the events at Changi, especially the airport
+tm_shape(changi_road) + 
+  tm_lines() +
+tm_shape(changi_destination) +
+  tm_dots(col = "red") +
+tm_shape(changi_origin) +
+  tm_dots(col = "green")
+```
+
+
+## Calculating NKDE
+
+### NKDE Changi Origin
+
+
+```{r}
+lixels <- lixelize_lines(changi_road,
+                         150,
+                         mindist = 100)
+```
+
+```{r}
+samples <- lines_center(lixels)
+```
+
+```{r}
+origin_densities_changi <- nkde(changi_road,
+                  events=changi_origin,
+                  w=rep(1, nrow(changi_origin)),
+                  samples=samples,
+                  kernel_name="quartic",
+                  bw=300,
+                  div="bw",
+                  method="simple",
+                  digits=1,
+                  tol=1,
+                  grid_shape=c(1,1),
+                  max_depth = 8,
+                  agg=5,
+                  sparse=TRUE,
+                  verbose = FALSE,
+                  study_area = changi)
+```
+
+```{r}
+samples$origin_nkde <- origin_densities_changi*1000
+lixels$origin_nkde <- origin_densities_changi*1000
+```
+
+```{r}
+samples_origin <- samples[order(samples$origin_nkde),]
+```
+
+```{r}
+tm_shape(lixels) + 
+  tm_lines(col="origin_nkde")
+```
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Define the styles
+styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
+
+# Create a multi-panel plot
+par(mfrow = c(2, 3))  # Adjust as needed
+for (style in styles) {
+  print(
+    tm_shape(changi_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_origin) + 
+      tm_dots("origin_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +
+      tm_layout(main.title = paste('Changi Origins NKDE (', style, ')'), main.title.size = 1)
+  )
+}
+```
+
+
+### NKDE Changi Destination
+
+
+```{r}
+destination_densities_changi <- nkde(changi_road,
+                  events=changi_destination,
+                  w=rep(1, nrow(changi_destination)),
+                  samples=samples,
+                  kernel_name="quartic",
+                  bw=300,
+                  div="bw",
+                  method="simple",
+                  digits=1,
+                  tol=1,
+                  grid_shape=c(1,1),
+                  max_depth = 8,
+                  agg=5,
+                  sparse=TRUE,
+                  verbose = FALSE,
+                  study_area = changi)
+```
+
+```{r}
+samples$destination_nkde <- destination_densities_changi*1000
+lixels$destination_nkde <- destination_densities_changi*1000
+```
+
+```{r}
+samples_destination <- samples[order(samples$destination_nkde),]
+```
+
+```{r}
+tm_shape(lixels) + 
+  tm_lines(col="destination_nkde")
+```
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Define the styles
+styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
+
+# Create a multi-panel plot
+par(mfrow = c(2, 3))  # Adjust as needed
+for (style in styles) {
+  print(
+    tm_shape(changi_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_destination) + 
+      tm_dots("destination_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +
+      tm_layout(main.title = paste('Changi Destinations NKDE (', style, ')'), main.title.size = 1)
+  )
+}
+
+```
+
+** Overview of Changi NKDE**:
+-   Contrary to my initial assumption based on frequent travel to the airport, the NKDE map for Changi reveals a discrepancy between expected and observed Grab trip patterns.
+-   Origins are predominantly concentrated around Changi Beach, Changi Village Hawker Centre, and various industrial areas, deviating from the anticipated higher concentration near the airport.
+-   Destination points are clustered along the stretch from the SIA Training Centre to the T4 flyover, primarily comprising companies and industrial areas, challenging the assumption of significant travel to the airport.
+-   This unexpected distribution suggests that Grab trips in the Changi area are more aligned with industrial and commercial activities than solely airport-related travel, indicating a diversified usage pattern in this region.
+
+** Possible insights**:
+-   The concentration of Grab origins around Changi Beach and the Changi Village Hawker Centre suggests that individuals in these recreational and residential areas frequently utilize Grab services, potentially for local commuting or leisure travel.
+
+-   The prevalence of origins in industrial areas indicates a significant role for Grab in facilitating transportation for workers commuting to and from these locations, contributing to its usage in industrial zones.
+
+-   The stretch from the SIA Training Centre to the T4 flyover, might reflects a strong demand for Grab services in this commercial and industrial corridor.
+
+-   The pattern of origins and destinations being dispersed across different areas in Changi indicates that Grab serves a varied range of commuting needs, including both residential and industrial travel.
+
+-   The unexpected distribution underscores the importance of considering diverse factors, such as local activities, industrial zones, and commercial areas, when analyzing Grab usage patterns in the Changi region.
+
+
+### Bukit Merah
+
+
+```{r}
+# Restrict the area of our NKDE to bukit Merah
+bukitMerah <- mpsz %>% filter(PLN_AREA_N == "BUKIT MERAH")
+```
+
+```{r}
+# Remove small rocks or outer islands on the map by taking the intersection with our outline (filled_sf)
+bukiMerah <- st_intersection(bukitMerah, filled_sf)
+```
+
+```{r}
+# Take only the roads that come into contact with bukit merah
+bukitMerah_road <- road_sg[road_sg$osm_id %in% as.numeric(st_intersection(road_sg, bukitMerah)$osm_id), ]
+```
+
+```{r}
+plot(bukitMerah_road)
+```
+
+```{r}
+# Take only the events that happened within bukit merah (origin)
+bukitMerah_origin <- st_intersection(origin_df, bukitMerah)
+plot(bukitMerah_origin)
+```
+
+
+As part of NKDE, the events need to have happened on the network. As such, we use snapPointsToLines2 to ensure that the points are on the network. Points off the network may have occurred due to slight GPS drift.
+
+
+```{r}
+bukitMerah_origin <- snapPointsToLines2(bukitMerah_origin, bukitMerah)
+plot(bukitMerah_origin)
+```
+
+```{r}
+# Take only the events that happened within Bukit Merah (destination)
+bukitMerah_destination <- st_intersection(destination_df, bukitMerah)
+plot(bukitMerah_destination)
+```
+
+```{r}
+bukitMerah_destination <- snapPointsToLines2(bukitMerah_destination, bukitMerah)
+plot(bukitMerah_destination)
+```
+
+```{r}
+# Visualize the events at Bukit Merah, especially the airport
+tm_shape(bukitMerah_road) + 
+  tm_lines() +
+tm_shape(bukitMerah_destination) +
+  tm_dots(col = "red") +
+tm_shape(bukitMerah_origin) +
+  tm_dots(col = "green")
+```
+
+
+## Calculating NKDE
+
+### NKDE Bukit Merah Origin
+
+
+```{r}
+lixels <- lixelize_lines(bukitMerah_road,
+                         150,
+                         mindist = 100)
+```
+
+```{r}
+samples <- lines_center(lixels)
+```
+
+```{r}
+origin_densities_bukitMerah <- nkde(bukitMerah_road,
+                  events=bukitMerah_origin,
+                  w=rep(1, nrow(bukitMerah_origin)),
+                  samples=samples,
+                  kernel_name="quartic",
+                  bw=300,
+                  div="bw",
+                  method="simple",
+                  digits=1,
+                  tol=1,
+                  grid_shape=c(1,1),
+                  max_depth = 8,
+                  agg=5,
+                  sparse=TRUE,
+                  verbose = FALSE,
+                  study_area = bukitMerah)
+```
+
+```{r}
+samples$origin_nkde <- origin_densities_bukitMerah*1000
+lixels$origin_nkde <- origin_densities_bukitMerah*1000
+```
+
+```{r}
+samples_origin <- samples[order(samples$origin_nkde),]
+```
+
+```{r}
+tm_shape(lixels) + 
+  tm_lines(col="origin_nkde")
+```
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Define the styles
+styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
+
+# Create a multi-panel plot
+par(mfrow = c(2, 3))  # Adjust as needed
+for (style in styles) {
+  print(
+    tm_shape(bukitMerah_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_origin) + 
+      tm_dots("origin_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +
+      tm_layout(main.title = paste('Bukit Merah Origins NKDE (', style, ')'), main.title.size = 1)
+  )
+}
+```
+
+
+### NKDE Bukit Merah Destination
+
+
+```{r}
+destination_densities_bukitMerah <- nkde(bukitMerah_road,
+                  events=bukitMerah_destination,
+                  w=rep(1, nrow(bukitMerah_destination)),
+                  samples=samples,
+                  kernel_name="quartic",
+                  bw=300,
+                  div="bw",
+                  method="simple",
+                  digits=1,
+                  tol=1,
+                  grid_shape=c(1,1),
+                  max_depth = 8,
+                  agg=5,
+                  sparse=TRUE,
+                  verbose = FALSE,
+                  study_area = bukitMerah)
+```
+
+```{r}
+samples$destination_nkde <- destination_densities_bukitMerah*1000
+lixels$destination_nkde <- destination_densities_bukitMerah*1000
+```
+
+```{r}
+samples_destination <- samples[order(samples$destination_nkde),]
+```
+
+```{r}
+tm_shape(lixels) + 
+  tm_lines(col="destination_nkde")
+```
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Define the styles
+styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
+
+# Create a multi-panel plot
+par(mfrow = c(2, 3))  # Adjust as needed
+for (style in styles) {
+  print(
+    tm_shape(changi_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_destination) + 
+      tm_dots("destination_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +
+      tm_layout(main.title = paste('Bukit Merah Destination NKDE (', style, ')'), main.title.size = 1)
+  )
+}
+
+```
+
+
+** Overview from bukit merah NKDE map**:
+The NKDE map for Bukit Merah reveals a noticeable trend where a significant number of individuals opt for Grab rides starting from Bukit Merah, while fewer choose it as their destination. This substantial disparity implies a potential scenario where people departing from work favor Grab for their journey home, indicating a shift in transportation preferences, possibly driven by convenience or efficiency considerations during the homeward commute.
+
+**Possible insights**:
+-   The higher concentration of Grab origins in Bukit Merah may indicate a preference among individuals leaving work to use Grab for their homeward commute.
+
+-   The lower density of destination points in Bukit Merah suggests that fewer people choose Grab as a mode of transportation when heading to Bukit Merah, potentially indicating a preference for alternative modes of transport or decentralized work destinations.
+
+-   The observed contrast in usage patterns implies a potential shift in commuting behaviors, where individuals prioritize Grab for the convenience and efficiency it offers during the journey home.
+
+-   This trend could be influenced by factors such as time sensitivity after work, comfort, or specific commuting needs that make Grab a preferred choice for the homeward journey from Bukit Merah.
+
+
+
+# Reflection
+
+Throughout this assignment, I encountered numerous challenges that posed significant obstacles along the way. The overall difficulty level was high, leading to a initial sad and tiring experience. Despite the persistent errors and obstacles, I must acknowledge that this assignment has been a tremendous learning opportunity. While the journey was exhausting and marked by moments of wanting to give up due to repeated unsuccessful attempts, the fulfillment at the conclusion is deeply gratifying. I am thankful and appreciative that I was ultimately able to complete the assignment.
+
+
 

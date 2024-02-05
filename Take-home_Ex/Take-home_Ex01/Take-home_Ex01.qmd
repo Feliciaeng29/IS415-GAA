@@ -740,8 +740,7 @@ plot(destination.bw)
 
 -   In the central bottom half of Singapore, which is likely near Bukit Merah, the proximity to the central area explains a notable volume of trips. This could be attributed to commuters traveling for work and tourists exploring popular areas like Orchard and Marina Bay. The convenience of accessing tourist hotspots may contribute to the high travel demand in this region.
 
-Hence, I decide to just focus on this 3 zones for the NKDE areas.
-Focus areas: "WOODLANDS", "BUKIT MERAH", "CHANGI"
+Hence, I decide to just focus on this 3 zones for the NKDE areas. Focus areas: "WOODLANDS", "BUKIT MERAH", "CHANGI"
 
 # NKDE
 
@@ -759,8 +758,7 @@ Extract the Woodlands area from the MPSZ dataset.
 woodlands <- mpsz %>% filter(PLN_AREA_N == "WOODLANDS")
 ```
 
-Remove small rocks or outer islands on the map by taking the intersection with our outline (filled_sf)
-Intersect the Woodlands area with the specified outline to eliminate small rocks or outer islands.
+Remove small rocks or outer islands on the map by taking the intersection with our outline (filled_sf) Intersect the Woodlands area with the specified outline to eliminate small rocks or outer islands.
 
 ```{r}
 woodlands <- st_intersection(woodlands, filled_sf)
@@ -862,10 +860,6 @@ samples_origin <- samples[order(samples$origin_nkde),]
 ```
 
 ```{r}
-tmap_mode('view')
-```
-
-```{r}
 tm_shape(lixels) + 
   tm_lines(col="origin_nkde")
 ```
@@ -890,7 +884,6 @@ for (style in styles) {
   )
 }
 ```
-
 
 ### NKDE Woodlands Destination
 
@@ -923,10 +916,6 @@ samples_destination <- samples[order(samples$destination_nkde),]
 ```
 
 ```{r}
-tmap_mode('view')
-```
-
-```{r}
 tm_shape(lixels) + 
   tm_lines(col="destination_nkde")
 ```
@@ -952,20 +941,20 @@ for (style in styles) {
 }
 
 ```
-** Overview of Woodlands NKDE**:
--   Building upon the earlier inference, supported by the NKDE, it's evident that there are significant origins and destinations around the Woodlands checkpoint area. Notably, there are more Grab origins than destinations in this region.
--   A closer examination reveals that the points are dispersed across Woodlands as a whole, not solely concentrated around the checkpoint. Notably, destination points cluster near Marsiling and Woodlands MRT areas.
--   While origin points are also present near Marsiling and Woodlands MRT areas, there is a higher concentration, particularly around the Woodlands checkpoint, suggesting a distinctive pattern in Grab pickups in this specific location.
 
-** Possible Insights**:
--   The higher concentration of Grab origins near the Woodlands checkpoint area might be indicative of commuters crossing the border between Singapore and Malaysia, possibly for work or other regular activities.
+\*\* Overview of Woodlands NKDE\*\*: - Building upon the earlier inference, supported by the NKDE, it's evident that there are significant origins and destinations around the Woodlands checkpoint area. Notably, there are more Grab origins than destinations in this region. - A closer examination reveals that the points are dispersed across Woodlands as a whole, not solely concentrated around the checkpoint. Notably, destination points cluster near Marsiling and Woodlands MRT areas. - While origin points are also present near Marsiling and Woodlands MRT areas, there is a higher concentration, particularly around the Woodlands checkpoint, suggesting a distinctive pattern in Grab pickups in this specific location.
+
+\*\* Possible Insights\*\*: - The higher concentration of Grab origins near the Woodlands checkpoint area might be indicative of commuters crossing the border between Singapore and Malaysia, possibly for work or other regular activities.
 
 -   The dispersed nature of points across Woodlands suggests that Grab services cater to various destinations within the entire region, not limited to specific hotspots, contributing to the overall accessibility of transportation.
 
 -   The clustering of destination points near Marsiling and Woodlands MRT areas indicates potential transportation hubs or popular drop-off locations, possibly reflecting a preference for public transit connections or specific destinations in these areas.
 
--     The disparity in the number of origins and destinations, especially around the Woodlands checkpoint, may be influenced by the nature of travel patterns, with more individuals preferring Grab for the initial leg of their journey, possibly due to convenience or specific commuting needs.
+-   
 
+    ```         
+    The disparity in the number of origins and destinations, especially around the Woodlands checkpoint, may be influenced by the nature of travel patterns, with more individuals preferring Grab for the initial leg of their journey, possibly due to convenience or specific commuting needs.
+    ```
 
 ### Changi
 
@@ -1065,10 +1054,6 @@ samples_origin <- samples[order(samples$origin_nkde),]
 ```
 
 ```{r}
-tmap_mode('view')
-```
-
-```{r}
 tm_shape(lixels) + 
   tm_lines(col="origin_nkde")
 ```
@@ -1125,10 +1110,6 @@ samples_destination <- samples[order(samples$destination_nkde),]
 ```
 
 ```{r}
-tmap_mode('view')
-```
-
-```{r}
 tm_shape(lixels) + 
   tm_lines(col="destination_nkde")
 ```
@@ -1154,14 +1135,10 @@ for (style in styles) {
 }
 
 ```
-** Overview of Changi NKDE**:
--   Contrary to my initial assumption based on frequent travel to the airport, the NKDE map for Changi reveals a discrepancy between expected and observed Grab trip patterns.
--   Origins are predominantly concentrated around Changi Beach, Changi Village Hawker Centre, and various industrial areas, deviating from the anticipated higher concentration near the airport.
--   Destination points are clustered along the stretch from the SIA Training Centre to the T4 flyover, primarily comprising companies and industrial areas, challenging the assumption of significant travel to the airport.
--   This unexpected distribution suggests that Grab trips in the Changi area are more aligned with industrial and commercial activities than solely airport-related travel, indicating a diversified usage pattern in this region.
 
-** Possible insights**:
--   The concentration of Grab origins around Changi Beach and the Changi Village Hawker Centre suggests that individuals in these recreational and residential areas frequently utilize Grab services, potentially for local commuting or leisure travel.
+\*\* Overview of Changi NKDE\*\*: - Contrary to my initial assumption based on frequent travel to the airport, the NKDE map for Changi reveals a discrepancy between expected and observed Grab trip patterns. - Origins are predominantly concentrated around Changi Beach, Changi Village Hawker Centre, and various industrial areas, deviating from the anticipated higher concentration near the airport. - Destination points are clustered along the stretch from the SIA Training Centre to the T4 flyover, primarily comprising companies and industrial areas, challenging the assumption of significant travel to the airport. - This unexpected distribution suggests that Grab trips in the Changi area are more aligned with industrial and commercial activities than solely airport-related travel, indicating a diversified usage pattern in this region.
+
+\*\* Possible insights\*\*: - The concentration of Grab origins around Changi Beach and the Changi Village Hawker Centre suggests that individuals in these recreational and residential areas frequently utilize Grab services, potentially for local commuting or leisure travel.
 
 -   The prevalence of origins in industrial areas indicates a significant role for Grab in facilitating transportation for workers commuting to and from these locations, contributing to its usage in industrial zones.
 
@@ -1170,7 +1147,6 @@ for (style in styles) {
 -   The pattern of origins and destinations being dispersed across different areas in Changi indicates that Grab serves a varied range of commuting needs, including both residential and industrial travel.
 
 -   The unexpected distribution underscores the importance of considering diverse factors, such as local activities, industrial zones, and commercial areas, when analyzing Grab usage patterns in the Changi region.
-
 
 ### Bukit Merah
 
@@ -1270,10 +1246,6 @@ samples_origin <- samples[order(samples$origin_nkde),]
 ```
 
 ```{r}
-tmap_mode('view')
-```
-
-```{r}
 tm_shape(lixels) + 
   tm_lines(col="origin_nkde")
 ```
@@ -1330,10 +1302,6 @@ samples_destination <- samples[order(samples$destination_nkde),]
 ```
 
 ```{r}
-tmap_mode('view')
-```
-
-```{r}
 tm_shape(lixels) + 
   tm_lines(col="destination_nkde")
 ```
@@ -1360,11 +1328,9 @@ for (style in styles) {
 
 ```
 
-** Overview from bukit merah NKDE map**:
-The NKDE map for Bukit Merah reveals a noticeable trend where a significant number of individuals opt for Grab rides starting from Bukit Merah, while fewer choose it as their destination. This substantial disparity implies a potential scenario where people departing from work favor Grab for their journey home, indicating a shift in transportation preferences, possibly driven by convenience or efficiency considerations during the homeward commute.
+\*\* Overview from bukit merah NKDE map\*\*: The NKDE map for Bukit Merah reveals a noticeable trend where a significant number of individuals opt for Grab rides starting from Bukit Merah, while fewer choose it as their destination. This substantial disparity implies a potential scenario where people departing from work favor Grab for their journey home, indicating a shift in transportation preferences, possibly driven by convenience or efficiency considerations during the homeward commute.
 
-**Possible insights**:
--   The higher concentration of Grab origins in Bukit Merah may indicate a preference among individuals leaving work to use Grab for their homeward commute.
+**Possible insights**: - The higher concentration of Grab origins in Bukit Merah may indicate a preference among individuals leaving work to use Grab for their homeward commute.
 
 -   The lower density of destination points in Bukit Merah suggests that fewer people choose Grab as a mode of transportation when heading to Bukit Merah, potentially indicating a preference for alternative modes of transport or decentralized work destinations.
 
@@ -1372,10 +1338,6 @@ The NKDE map for Bukit Merah reveals a noticeable trend where a significant numb
 
 -   This trend could be influenced by factors such as time sensitivity after work, comfort, or specific commuting needs that make Grab a preferred choice for the homeward journey from Bukit Merah.
 
-
-
 # Reflection
 
 Throughout this assignment, I encountered numerous challenges that posed significant obstacles along the way. The overall difficulty level was high, leading to a initial sad and tiring experience. Despite the persistent errors and obstacles, I must acknowledge that this assignment has been a tremendous learning opportunity. While the journey was exhausting and marked by moments of wanting to give up due to repeated unsuccessful attempts, the fulfillment at the conclusion is deeply gratifying. I am thankful and appreciative that I was ultimately able to complete the assignment.
-
-

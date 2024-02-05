@@ -862,6 +862,10 @@ samples_origin <- samples[order(samples$origin_nkde),]
 ```
 
 ```{r}
+tmap_mode('view')
+```
+
+```{r}
 tm_shape(lixels) + 
   tm_lines(col="origin_nkde")
 ```
@@ -886,6 +890,7 @@ for (style in styles) {
   )
 }
 ```
+
 
 ### NKDE Woodlands Destination
 
@@ -915,6 +920,10 @@ lixels$destination_nkde <- destination_densities_woodlands*1000
 
 ```{r}
 samples_destination <- samples[order(samples$destination_nkde),]
+```
+
+```{r}
+tmap_mode('view')
 ```
 
 ```{r}
@@ -1056,6 +1065,10 @@ samples_origin <- samples[order(samples$origin_nkde),]
 ```
 
 ```{r}
+tmap_mode('view')
+```
+
+```{r}
 tm_shape(lixels) + 
   tm_lines(col="origin_nkde")
 ```
@@ -1109,6 +1122,10 @@ lixels$destination_nkde <- destination_densities_changi*1000
 
 ```{r}
 samples_destination <- samples[order(samples$destination_nkde),]
+```
+
+```{r}
+tmap_mode('view')
 ```
 
 ```{r}
@@ -1253,6 +1270,10 @@ samples_origin <- samples[order(samples$origin_nkde),]
 ```
 
 ```{r}
+tmap_mode('view')
+```
+
+```{r}
 tm_shape(lixels) + 
   tm_lines(col="origin_nkde")
 ```
@@ -1306,6 +1327,10 @@ lixels$destination_nkde <- destination_densities_bukitMerah*1000
 
 ```{r}
 samples_destination <- samples[order(samples$destination_nkde),]
+```
+
+```{r}
+tmap_mode('view')
 ```
 
 ```{r}

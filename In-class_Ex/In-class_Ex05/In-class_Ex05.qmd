@@ -7,95 +7,87 @@ output:
 ---
 # In Class Exercise 5
 
-## Getting Started
-
-## Installation
-
+# Installing and Loading Packages
+-   [**sfdep**](https://sfdep.josiahparry.com/) creates a sf and tidyverse friendly interface to the package. 
 ```{r}
-pacman::p_load(sf, spdep, tmap, tidyverse, sfdep)
+pacman::p_load(sf, tmap, sfdep, tidyverse, dplyr)
 ```
 
-Spdep is much better than sfdep due to some additional functions added to spdep afterwards.
+# Data
+The two data sets we will use are:
+-   Hunan, a geospatial data in ESRI shape file format
+-   Hunan_2012, aspatial attribute data in csv format
 
+## Import geospatial data
 ```{r}
-hunan <- st_read(dsn = "data/geospatial", 
-                 layer = "Hunan")
-
-hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv", show_col_types = FALSE)
+hunan <- st_read(dsn="data/geospatial", layer="Hunan")
+```
+## Importing aspatial data
+```{r}
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv")
 ```
 
-Warning: Coordinate pair such as 108.7831,... is in decimal degree which means its WGS84 coordinate system as well.
-
-Analysing by Unique Values by City in hunan2012!:
-
-Analysing by Unique Values by City in hunan:
-
-## Pre-processing
-
+### Combining aspatial fields to geospatil data
 ```{r}
-hunan_GDPPC <- left_join(hunan, hunan2012) %>%
-select (1:4, 7, 15)
+hunan_GDPPC <- left_join(hunan,hunan2012) %>%
+  select(1:4, 7, 15)
+```
+### Plotting Choropleth Map
+```{r}
+tmap_mode("plot")
+tm_shape(hunan_GDPPC) +
+  tm_fill(col="GDPPC",
+          style = "quantile",
+          palette = "Blues",
+          title = "GDPPC") +
+  tm_layout(main.title = "Distribution of GDP per capita by County",
+            main.title.position = "center",
+            main.title.size =1.2,
+            legend.height = 0.45,
+            legend.width = 0.35,
+            frame = TRUE) +
+  tm_borders(alpha = 0.5) +
+  tm_compass(type="8star", size = 2) +
+  tm_scale_bar() +
+  tm_grid(alpha = 0.2)
 ```
 
-## Plotting
-
-tmap_mode("plot") #<- static version
-tmap_mode("view") #<- interactive version
-tm_shape(hunan_GDPPC + 
-           tm_fill("GDPPC", style = "quantile",
-                    palette = "Blues",
-                    title = "GDPPC") + 
-         tm_layout(main.title = "Distribution of GDP per capita by county, Hunan Province",
-                   main.title.position = "center",
-                   main.title.size = 1.2,
-                   main.title.height = 0.45,
-                   main.title.width = 0.35,
-                   frame = TRUE)
-
+#   Global Measures of Spatial Association
+The queen method is used to derive the contiguity weights
 ```{r}
-
-    
-```
-
-# 
-
-## Analysis
-
-### Step 1
 wm_q <- hunan_GDPPC %>%
-mutate(nb = st_contiguity(geometry),
-wt = st_weights(nb, style = "W"), .before = 1)
-
-```{r}
-
+  mutate(nb = st_contiguity(geometry),
+         wt = st_weights(nb,
+                         style = "W"),
+         .before = 1)
 ```
 
--   mutate is equivalent to pd.compute
-
--   Combining polynb() and nb2llists() from hands on exercise in the above code chunk. The above format is the more advanced improved version
-
-### Step 2 - Computing Global Moran'I
-
-moranI <- global_moran_test(wm_q$GDPPC,
-wm_q$nb,
-wm_q$wt)
+##    Computing Global Moran's I
+```{r}
+moranI <- global_moran(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt)
 glimpse(moranI)
-
-```{r}
-
 ```
 
-### Step 3 - Performing Global Moran'I permutation test
+```{r}
+global_moran_test(wm_q$GDPPC,
+                       wm_q$nb,
+                       wm_q$wt)
+```
 
-set.seed(1234)
-
-global_moran_perm(wm_q$GDPPC,
-wm_q$nb,
-wm_q$wt, 
-nsim = 99)
+###   Performing Global Moran's I permutation test
+It is better to conduct permutation tests.
 
 ```{r}
+set.seed(1234)
+```
 
+```{r}
+global_moran_perm(wm_q$GDPPC,
+                  wm_q$nb,
+                  wm_q$wt,
+                  nsim = 99) 
 ```
 
 nsim = 99 because it is running 100 times simulations since the index for running the loop starts from 0.

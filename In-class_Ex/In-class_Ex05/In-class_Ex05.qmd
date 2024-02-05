@@ -18,10 +18,10 @@ pacman::p_load(sf, spdep, tmap, tidyverse, sfdep)
 Spdep is much better than sfdep due to some additional functions added to spdep afterwards.
 
 ```{r}
-hunan <- st_read(dsn = "../../data/geospatial/week5", 
+hunan <- st_read(dsn = "data/geospatial", 
                  layer = "Hunan")
 
-hunan2012 <- read_csv("../../data/aspatial/week5/Hunan_2012.csv", show_col_types = FALSE)
+hunan2012 <- read_csv("data/aspatial/Hunan_2012.csv", show_col_types = FALSE)
 ```
 
 Warning: Coordinate pair such as 108.7831,... is in decimal degree which means its WGS84 coordinate system as well.
@@ -33,25 +33,27 @@ Analysing by Unique Values by City in hunan:
 ## Pre-processing
 
 ```{r}
-#hunan_GDPPC <- left_join(hunan, hunan2012) %>%
-#select (1:4, 7, 15)
+hunan_GDPPC <- left_join(hunan, hunan2012) %>%
+select (1:4, 7, 15)
 ```
 
 ## Plotting
 
-```{r}
 tmap_mode("plot") #<- static version
-#tmap_mode("view") #<- interactive version
-#tm_shape(hunan_GDPPC + 
-#           tm_fill("GDPPC", style = "quantile",
-#                    palette = "Blues",
-#                    title = "GDPPC") + 
-#         tm_layout(main.title = "Distribution of GDP per capita by county, Hunan Province",
-#                   main.title.position = "center",
-#                   main.title.size = 1.2,
-#                   main.title.height = 0.45,
-#                   main.title.width = 0.35,
-#                   frame = TRUE)
+tmap_mode("view") #<- interactive version
+tm_shape(hunan_GDPPC + 
+           tm_fill("GDPPC", style = "quantile",
+                    palette = "Blues",
+                    title = "GDPPC") + 
+         tm_layout(main.title = "Distribution of GDP per capita by county, Hunan Province",
+                   main.title.position = "center",
+                   main.title.size = 1.2,
+                   main.title.height = 0.45,
+                   main.title.width = 0.35,
+                   frame = TRUE)
+
+```{r}
+
     
 ```
 
@@ -60,11 +62,12 @@ tmap_mode("plot") #<- static version
 ## Analysis
 
 ### Step 1
-
-```{r}
 wm_q <- hunan_GDPPC %>%
 mutate(nb = st_contiguity(geometry),
 wt = st_weights(nb, style = "W"), .before = 1)
+
+```{r}
+
 ```
 
 -   mutate is equivalent to pd.compute
@@ -73,22 +76,26 @@ wt = st_weights(nb, style = "W"), .before = 1)
 
 ### Step 2 - Computing Global Moran'I
 
+moranI <- global_moran_test(wm_q$GDPPC,
+wm_q$nb,
+wm_q$wt)
+glimpse(moranI)
+
 ```{r}
-#moranI <- global_moran_test(wm_q$GDPPC,
-#wm_q$nb,
-#wm_q$wt)
-#glimpse(moranI)
+
 ```
 
 ### Step 3 - Performing Global Moran'I permutation test
 
-```{r}
-#set.seed(1234)
+set.seed(1234)
 
-#global_moran_perm(wm_q$GDPPC,
-#wm_q$nb,
-#wm_q$wt, 
-#nsim = 99)
+global_moran_perm(wm_q$GDPPC,
+wm_q$nb,
+wm_q$wt, 
+nsim = 99)
+
+```{r}
+
 ```
 
 nsim = 99 because it is running 100 times simulations since the index for running the loop starts from 0.

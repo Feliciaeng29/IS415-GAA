@@ -865,6 +865,16 @@ tm_shape(lixels) +
 ```
 
 ```{r}
+
+tm_shape(woodlands_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_origin) + 
+      tm_dots("origin_nkde") +
+  tm_basemap("OpenStreetMap") +
+tm_scale_bar()
+```
+
+```{r}
 # Define a new color palette
 colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
 colorRamp <- rev(colorRamp)
@@ -918,6 +928,16 @@ samples_destination <- samples[order(samples$destination_nkde),]
 ```{r}
 tm_shape(lixels) + 
   tm_lines(col="destination_nkde")
+```
+
+```{r}
+
+tm_shape(woodlands_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_destination) + 
+      tm_dots("destination_nkde") +
+  tm_basemap("OpenStreetMap") +
+tm_scale_bar()
 ```
 
 ```{r}
@@ -1059,6 +1079,16 @@ tm_shape(lixels) +
 ```
 
 ```{r}
+
+tm_shape(changi_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_origin) + 
+      tm_dots("origin_nkde") +
+  tm_basemap("OpenStreetMap") +
+tm_scale_bar()
+```
+
+```{r}
 # Define a new color palette
 colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
 colorRamp <- rev(colorRamp)
@@ -1112,6 +1142,16 @@ samples_destination <- samples[order(samples$destination_nkde),]
 ```{r}
 tm_shape(lixels) + 
   tm_lines(col="destination_nkde")
+```
+
+```{r}
+
+tm_shape(changi_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_destination) + 
+      tm_dots("destination_nkde") +
+  tm_basemap("OpenStreetMap") +
+tm_scale_bar()
 ```
 
 ```{r}
@@ -1251,6 +1291,16 @@ tm_shape(lixels) +
 ```
 
 ```{r}
+
+tm_shape(bukitMerah_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_origin) + 
+      tm_dots("origin_nkde") +
+  tm_basemap("OpenStreetMap") +
+tm_scale_bar()
+```
+
+```{r}
 # Define a new color palette
 colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
 colorRamp <- rev(colorRamp)
@@ -1307,6 +1357,15 @@ tm_shape(lixels) +
 ```
 
 ```{r}
+tm_shape(bukitMerah_road) + 
+      tm_lines("black") + 
+      tm_shape(samples_destination) + 
+      tm_dots("destination_nkde") +
+  tm_basemap("OpenStreetMap") +
+tm_scale_bar()
+```
+
+```{r}
 # Define a new color palette
 colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
 colorRamp <- rev(colorRamp)
@@ -1318,7 +1377,7 @@ styles <- c("kmeans", "sd", "jenks", "equal", "pretty")
 par(mfrow = c(2, 3))  # Adjust as needed
 for (style in styles) {
   print(
-    tm_shape(changi_road) + 
+    tm_shape(bukitMerah_road) + 
       tm_lines("black") + 
       tm_shape(samples_destination) + 
       tm_dots("destination_nkde", style = style, palette = colorRamp, n = 5, size = 0.15) +

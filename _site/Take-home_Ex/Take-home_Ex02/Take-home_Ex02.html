@@ -6,10 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Felicia Eng">
-<meta name="dcterms.date" content="2024-02-01">
 
-<title>IS415-GAA - Take-home Exercise 2: Application of Spatial and Spatio-temporal Analysis Methods to Discover the Distribution of Dengue Fever in Tainan City, Taiwan</title>
+<title>IS415-GAA – take-home_ex02</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -228,95 +192,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#the-task" id="toc-the-task" class="nav-link active" data-scroll-target="#the-task"><strong>The Task</strong></a></li>
-  <li><a href="#importing-packages" id="toc-importing-packages" class="nav-link" data-scroll-target="#importing-packages"><strong>Importing Packages</strong></a></li>
-  <li><a href="#importing-datasets-to-r-environment" id="toc-importing-datasets-to-r-environment" class="nav-link" data-scroll-target="#importing-datasets-to-r-environment"><strong>Importing Datasets to R Environment</strong></a></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title">Take-home Exercise 2: Application of Spatial and Spatio-temporal Analysis Methods to Discover the Distribution of Dengue Fever in Tainan City, Taiwan</h1>
-</div>
 
 
 
-<div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Felicia Eng </p>
-          </div>
-  </div>
-    
-    <div>
-    <div class="quarto-title-meta-heading">Published</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date">February 1, 2024</p>
-    </div>
-  </div>
-  
-    <div>
-    <div class="quarto-title-meta-heading">Modified</div>
-    <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 25, 2024</p>
-    </div>
-  </div>
-    
-  </div>
-  
-
-</header>
-
-<section id="the-task" class="level2">
-<h2 class="anchored" data-anchor-id="the-task"><strong>The Task</strong></h2>
-<p>The specific tasks of this take-home exercise are as follows:</p>
-<ul>
-<li><p>Using appropriate function of <strong>sf</strong> and <strong>tidyverse</strong>, preparing the following geospatial data layer:</p>
-<ul>
-<li><p>a study area layer in sf polygon features. It must be at village level and confined to the D01, D02, D04, D06, D07, D08, D32 and D39 counties of Tainan City, Taiwan.</p></li>
-<li><p>a dengue fever layer within the study area in sf point features. The dengue fever cases should be confined to epidemiology week 31-50, 2023.</p></li>
-<li><p>a derived dengue fever layer in <a href="https://sfdep.josiahparry.com/articles/spacetime-s3">spacetime s3 class of sfdep</a>. It should contain, among many other useful information, a data field showing number of dengue fever cases by village and by epidemiology week.</p></li>
-</ul></li>
-<li><p>Using the extracted data, perform global spatial autocorrelation analysis by using <a href="https://is415-gaa-tskam.netlify.app/in-class_ex/in-class_ex05/in-class_ex05-glsa">sfdep methods</a>.</p></li>
-<li><p>Using the extracted data, perform local spatial autocorrelation analysis by using <a href="https://r4gdsa.netlify.app/chap10.html">sfdep methods</a>.</p></li>
-<li><p>Using the extracted data, perform emerging hotspot analysis by using <a href="https://is415-gaa-tskam.netlify.app/in-class_ex/in-class_ex05/in-class_ex05-ehsa">sfdep methods</a>.</p></li>
-<li><p>Describe the spatial patterns revealed by the analysis above.</p></li>
-</ul>
-</section>
-<section id="importing-packages" class="level2">
-<h2 class="anchored" data-anchor-id="importing-packages"><strong>Importing Packages</strong></h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>pacman<span class="sc">::</span><span class="fu">p_load</span>(sf, st, tidyverse, lubridate, spdep, tmap, knitr)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="importing-datasets-to-r-environment" class="level2">
-<h2 class="anchored" data-anchor-id="importing-datasets-to-r-environment"><strong>Importing Datasets to R Environment</strong></h2>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>tainan <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>, </span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">layer =</span> <span class="st">"TAINAN_VILLAGE"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `TAINAN_VILLAGE' from data source 
-  `C:\Feliciaeng29\IS415-GAA\Take-home_Ex\Take-home_Ex02\data\geospatial' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 649 features and 10 fields
-Geometry type: POLYGON
-Dimension:     XY
-Bounding box:  xmin: 120.0269 ymin: 22.88751 xmax: 120.6563 ymax: 23.41374
-Geodetic CRS:  TWD97</code></pre>
-</div>
-</div>
-
-
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

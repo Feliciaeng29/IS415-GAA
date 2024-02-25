@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 8"
+title: "Hands-on Exercise 6"
 description: |
   In this hands-on exercise, I will learn how to perform geographical segmentation by using appropriate R packages. I will also use approriate R packages for performing cluster analysis and visualising clustering results.
 author:

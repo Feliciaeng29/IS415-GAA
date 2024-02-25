@@ -45,7 +45,7 @@ tainan <- st_read(dsn = "data/geospatial",
 ```
 
 ```{r}
-dengue <- read_csv("data/aspatial/Dengue_Daily.csv")
+
 ```
 
 

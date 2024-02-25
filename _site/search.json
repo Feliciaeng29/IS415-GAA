@@ -1369,7 +1369,7 @@
     "href": "Take-home_Ex/Take-home_Ex02/Take-home_Ex02.html#importing-datasets-to-r-environment",
     "title": "Take-home Exercise 2: Application of Spatial and Spatio-temporal Analysis Methods to Discover the Distribution of Dengue Fever in Tainan City, Taiwan",
     "section": "Importing Datasets to R Environment",
-    "text": "Importing Datasets to R Environment\n\ntainan &lt;- st_read(dsn = \"data/geospatial\", \n                 layer = \"TAINAN_VILLAGE\") \n\nReading layer `TAINAN_VILLAGE' from data source \n  `C:\\Feliciaeng29\\IS415-GAA\\Take-home_Ex\\Take-home_Ex02\\data\\geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 649 features and 10 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 120.0269 ymin: 22.88751 xmax: 120.6563 ymax: 23.41374\nGeodetic CRS:  TWD97\n\n\n\ndengue &lt;- read_csv(\"data/aspatial/Dengue_Daily.csv\")"
+    "text": "Importing Datasets to R Environment\n\ntainan &lt;- st_read(dsn = \"data/geospatial\", \n                 layer = \"TAINAN_VILLAGE\") \n\nReading layer `TAINAN_VILLAGE' from data source \n  `C:\\Feliciaeng29\\IS415-GAA\\Take-home_Ex\\Take-home_Ex02\\data\\geospatial' \n  using driver `ESRI Shapefile'\nSimple feature collection with 649 features and 10 fields\nGeometry type: POLYGON\nDimension:     XY\nBounding box:  xmin: 120.0269 ymin: 22.88751 xmax: 120.6563 ymax: 23.41374\nGeodetic CRS:  TWD97"
   },
   {
     "objectID": "Take-home_Ex/Take-home_Ex02/data/geospatial/TAINAN_VILLAGE.html",

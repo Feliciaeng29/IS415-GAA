@@ -33,10 +33,16 @@ website:
           href: "In-class_Ex/In-class_Ex04/In-class_Ex04.html"
         - text: "In-class Exercise 5"
           href: "In-class_Ex/In-class_Ex05/In-class_Ex05.html"
+        - text: "In-class Exercise 6-EHSA"
+          href: "In-class_Ex/In-class_Ex06/In-class_Ex06-EHSA.html"
+        - text: "In-class Exercise 6-GLSA"
+          href: "In-class_Ex/In-class_Ex06/In-class_Ex06-GLSA.html"
     - text: "Take-home Exercise"
       menu:
         - text: "Take-home Exercise 1"
           href: "Take-home_Ex/Take-home_Ex01/Take-home_Ex01.html"
+        - text: "Take-home Exercise 2"
+          href: "Take-home_Ex/Take-home_Ex02/Take-home_Ex02.html"
     right:
       - href: index.qmd
         text: Home

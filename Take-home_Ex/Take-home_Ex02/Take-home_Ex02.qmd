@@ -31,13 +31,15 @@ The specific tasks of this take-home exercise are as follows:
 
 -   Describe the spatial patterns revealed by the analysis above.
 
-## **Importing Packages**
+# **Importing Packages**
 
 ```{r}
-pacman::p_load(sf, st, tidyverse, lubridate, spdep, tmap, knitr)
+pacman::p_load(sf, st, tidyverse, lubridate, spdep, tmap, knitr, ggplot2, smoothr, sfdep, lubridate, RColorBrewer)
 ```
 
-## *Importing Datasets to R Environment**
+# \*Importing Datasets to R Environment\*\*
+
+## *Tainan Dataset*
 
 ```{r}
 tainan <- st_read(dsn = "data/geospatial", 
@@ -45,30 +47,427 @@ tainan <- st_read(dsn = "data/geospatial",
 head(tainan, 5)
 ```
 
+Let's visualise the dataset that was just imported
+
 ```{r}
 plot(tainan)
 ```
 
+In this case, st_transform(tainan, CRS=3414) is not needed
+
 ```{r}
 st_crs(tainan)
 ```
+
+## *Dengue Dataset*
 
 ```{r}
 dengue <- read_csv("data/aspatial/Dengue_Daily.csv")
 dengue
 ```
 
+```{r}
+summary(dengue)
+```
+
 # Data Preprocessing
 
-As stated:
-a study area layer in sf polygon features. It must be at village level and confined to the D01, D02, D04, D06, D07, D08, D32 and D39 counties of Tainan City, Taiwan.
+## Dengue Dataset
+
+As stated a dengue fever layer within the study area in sf point features. The dengue fever cases should be confined to epidemiology week 31-50, 2023.
+
+Convert the date column to Date format
+
+```{r}
+dengue$發病日 <- as.Date(dengue$發病日)
+```
+
+Extract epidemiology week numbers from the onset date column
+
+```{r}
+dengue$epi_week_number <- as.numeric(format(dengue$發病日, "%V"))
+```
+
+Define the desired epidemiology week range
+
+```{r}
+start_epi_week <- 31
+end_epi_week <- 50
+```
+
+Define the year of interest
+
+```{r}
+study_year <- 2023
+```
+
+Filter rows based on the specified epidemiology week range and study year
+
+```{r}
+study_dengue_cases <- dengue %>%
+  filter(epi_week_number >= start_epi_week & 
+         epi_week_number <= end_epi_week & 
+         year(發病日) == study_year)
+```
+
+Check the data
+
+```{r}
+summary(study_dengue_cases)
+```
+
+Select and rename columns
+
+```{r}
+dengue <- study_dengue_cases %>%
+  rename('x' = 最小統計區中心點X,
+         'y' = 最小統計區中心點Y,
+         'COUNTYNAME' = 居住縣市,
+         'VILLNAME' = 居住村里,
+         'TOWNNAME' = 居住鄉鎮)
+```
+
+Check the form of x and y coordinates
+
+```{r}
+class(dengue$`x`)
+class(dengue$`y`)
+```
+
+Changing it to numerical for x and y coords
+
+```{r}
+dengue$`x` <- as.numeric(dengue$`x`)
+dengue$`y` <- as.numeric(dengue$`y`)
+```
+
+As it can be seen: Warning: NAs introduced by coercionWarning: NAs introduced by coercion
+
+Lets remove the NA values from all the columns
+
+```{r}
+dengue <- na.omit(dengue)
+```
+
+Double check the data before moving on
+
+```{r}
+class(dengue$`x`)
+class(dengue$`y`)
+```
+
+Convert to an sf object with POINT geometry
+
+```{r}
+filtered_dengue <- st_as_sf(dengue, coords = c('x', 'y'), crs = st_crs(tainan))
+```
+
+Remove missing values
+
+```{r}
+dengue <- dengue[!(dengue$VILLNAME == "None"), ]
+```
+
+Group by village and calculate the number of dengue cases
+
+```{r}
+dengue_grouped <- dengue %>%
+  group_by(TOWNNAME, VILLNAME, epi_week_number) %>%
+  summarise(dengueCases = sum(確定病例數), .groups = 'drop')
+```
+
+## Tainan Dataset
+
+As stated: a study area layer in sf polygon features. It must be at village level and confined to the D01, D02, D04, D06, D07, D08, D32 and D39 counties of Tainan City, Taiwan.
 
 Retrieve D01, D02, D04, D06, D07, D08, D32 and D39 counties of Tainan City, Taiwan.
+
+So lets use the TOWNID to filter out only the specified countries. In this case we can also use subset(select = -NOTE) to exclude it from the dataframe.
 
 ```{r}
 tainan <- tainan[tainan$TOWNID %in% c("D01", "D02", "D04", "D06", "D07", "D08", "D32", "D39"), ]
 ```
 
+```{r}
+head(tainan)
+```
+
+Lets plot to visualise
+
+```{r}
+tmap_mode('plot')
+tm_shape(tainan) + 
+  tm_polygons("TOWNID") 
+```
+
+```{r}
+union_tainan <- st_union(tainan)
+plot(union_tainan)
+```
+
+## Visualizing 2 datasets together
+
+Visualizing the distribution of dengue cases on the tainan map
+
+```{r}
+tm_shape(tainan) + 
+  tm_polygons("TOWNID") +
+tm_shape(filtered_dengue) +
+  tm_dots(col = "purple")
+```
+
+Combining both data frame into one
+
+```{r}
+dengue_in_tainan <- left_join(tainan, dengue_grouped, by = c("TOWNNAME","VILLNAME"))
+```
+
+# Visualizing Choropleth Map
+
+```{r}
+# Define a new color palette
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+
+# Fill missing values (NA) with 0
+dengue_in_tainan$dengueCases[is.na(dengue_in_tainan$dengueCases)] <- 0
+
+# Function to plot for a given month
+plot_for_month <- function(data, month, week_start, week_end) {
+  month_data <- data %>%
+    filter(epi_week_number >= week_start & epi_week_number <= week_end)
+  
+  tmap_mode("plot")
+  tm_shape(month_data) +
+    tm_fill("dengueCases",
+            style = "quantile",
+            palette = colorRamp,
+            title = "Dengue Cases") +
+    tm_layout(main.title = paste(month, "2023 Distribution of Dengue Cases"),
+              main.title.position = "center",
+              main.title.size = 1.0,
+              legend.height = 0.55,
+              legend.width = 0.55,
+              frame = TRUE) +
+    tm_borders(alpha = 0.5) +
+    tm_compass(type = "8star", size = 3) +
+    tm_scale_bar() +
+    tm_grid(alpha = 0.2)
+}
+
+# Plot for each month
+plot_for_month(dengue_in_tainan, "August", 31, 35)
+plot_for_month(dengue_in_tainan, "September", 36, 39)
+plot_for_month(dengue_in_tainan, "October", 40, 44)
+plot_for_month(dengue_in_tainan, "November", 45, 48)
+```
+
+# Global Spatial Autocorrelation
+
+Contiguity weights: Queen’s method
+
+We compute spatial contiguity relationships among geometries stored in a data frame, calculates spatial weights based on these relationships,and adds the resulting variables to the data frame.
+
+Grouping data by village name and summarizing dengue cases
+
+```{r}
+dengue_grouped <- dengue %>%
+  group_by(VILLNAME) %>%
+  summarise(DengueCases = sum(確定病例數))
+```
+
+Removing rows with 'None' as village name
+
+```{r}
+dengue_grouped <- dengue_grouped[!(dengue_grouped$VILLNAME == "None"), ]
+```
+
+Joining the filtered Tainan data with the grouped dengue data
+
+```{r}
+# Perform the join
+tainan_dengue <- left_join(tainan, dengue_grouped, by = "VILLNAME")
+```
+
+Replacing NA values in DengueCases with 0
+
+```{r}
+tainan_dengue$DengueCases[is.na(tainan_dengue$DengueCases)] <- 0
+```
+
+Calculating spatial weights
+
+```{r}
+spatial_weights <- tainan_dengue %>%
+  mutate(Neighbors = st_contiguity(geometry, queen=TRUE),
+         Weights = st_weights(Neighbors, style = "W"),
+         .before = 1)
+```
+
+Examining the contents of the spatial weights matrix
+
+```{r}
+glimpse(spatial_weights)
+```
+
+## Computing Global Moran’s I
+
+Calculate Global Moran's I
+
+```{r}
+moranI_result <- global_moran(spatial_weights$DengueCases,
+                              spatial_weights$Neighbors,
+                              spatial_weights$Weights)
+```
+
+Print the result
+
+```{r}
+glimpse(moranI_result)
+```
+
+## Performing Global Moran’s I test
+
+Perform the Moran's I test
+
+```{r}
+moran_test_result <- global_moran_test(spatial_weights$DengueCases,
+                                       spatial_weights$Neighbors,
+                                       spatial_weights$Weights)
+```
+
+Performing Global Moran’s I permutation test
+
+Set seed for reproducibility
+
+```{r}
+set.seed(1234)
+```
+
+Perform Monte Carlo simulation
+
+```{r}
+moran_perm_result <- global_moran_perm(spatial_weights$DengueCases,
+                                       spatial_weights$Neighbors,
+                                       spatial_weights$Weights,
+                                       nsim = 99)
+
+```
+
+The results of your Monte Carlo simulation are given as a list with two values: **`I`** and **`K`**.
+
+-   **`I`** is the Moran’s I statistic, which measures spatial autocorrelation. A positive Moran’s I value (like 0.397 in your case) indicates positive spatial autocorrelation, which means that similar values tend to be located near each other. In the context of your analysis, this suggests that dengue cases are not randomly distributed across counties, but rather, counties with similar numbers of dengue cases tend to be located near each other.
+
+-   **`K`** is likely the test statistic for the permutation test, although without more context it’s hard to say for sure. In general, the permutation test is used to determine the significance of the Moran’s I statistic by comparing it to a distribution of Moran’s I values obtained by randomly permuting the spatial locations of the data.
+
+The above statistical analysis reveals a p-value less than the alpha threshold of 0.05. This provides substantial evidence to dismiss the null hypothesis, which suggests that the spatial distribution of dengue cases across counties is random and spatially independent. Given that the Moran’s I statistic exceeds 0, it’s reasonable to conclude that there’s a tendency for clustering in the spatial distribution of dengue cases.
 
 
+# Local Spatial Autocorrelation Analysis
 
+Computing local Moran’s I
+
+Compute local Moran's I statistic for spatial autocorrelation
+
+```{r}
+lisa <- spatial_weights %>% 
+  mutate(local_moran = local_moran(
+    DengueCases, Neighbors, Weights, nsim = 99),
+         .before = 1) %>%
+  unnest(local_moran)
+```
+
+Visualising local Moran’s I
+
+Define a new color palette
+
+```{r}
+colorRamp <- brewer.pal(n = 5, name = "YlGnBu")
+colorRamp <- rev(colorRamp)
+```
+
+
+Prepare a choropleth map using the ii field
+
+```{r}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_fill("ii", palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Local Moran's I of Dengue Cases",
+            main.title.size = 0.8)
+```
+
+Visualising p-value of local Moran’s I
+
+Prepare a choropleth map using the p_ii_sim field
+
+```{r}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_fill("p_ii_sim", palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "P-value of Local Moran's I",
+            main.title.size = 0.8)
+```
+
+Visualising local Moran’s I and p-value
+
+Plot both maps next to each other for comparison
+
+```{r}
+tmap_mode("plot")
+map1 <- tm_shape(lisa) +
+  tm_fill("ii", palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Local Moran's I of Dengue Cases",
+            main.title.size = 0.8)
+
+map2 <- tm_shape(lisa) +
+  tm_fill("p_ii",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+          labels = c("0.001", "0.01", "0.05", "Not sig"),
+          palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "P-value of Local Moran's I",
+            main.title.size = 0.8)
+
+tmap_arrange(map1, map2, ncol = 2)
+```
+
+
+Visualising LISA map
+
+Filter significant values
+
+```{r}
+lisa_sig <- lisa  %>%
+  filter(p_ii < 0.05)
+```
+
+
+Plot LISA map
+
+```{r}
+tmap_mode("plot")
+tm_shape(lisa) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(lisa_sig) +
+  tm_fill("mean", palette = colorRamp) + 
+  tm_borders(alpha = 0.4)
+```
+
+```{r}
+
+```
+
+# Hot Spot and Cold Spot Area Analysis (HCSA)
+
+## Visualising hot spot and cold spot areas
+
+# Performing Emerging Hotspot Analysis
+
+# Conclusion

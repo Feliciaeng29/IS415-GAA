@@ -331,9 +331,9 @@ glimpse(moranI_result)
 Perform the Moran's I test
 
 ```{r}
-moran_test_result <- global_moran_test(spatial_weights$DengueCases,
-                                       spatial_weights$Neighbors,
-                                       spatial_weights$Weights)
+global_moran_test(spatial_weights$DengueCases,
+                  spatial_weights$Neighbors,
+                  spatial_weights$Weights)
 ```
 
 Performing Global Moran’s I permutation test
@@ -347,10 +347,10 @@ set.seed(1234)
 Perform Monte Carlo simulation
 
 ```{r}
-moran_perm_result <- global_moran_perm(spatial_weights$DengueCases,
-                                       spatial_weights$Neighbors,
-                                       spatial_weights$Weights,
-                                       nsim = 99)
+global_moran_perm(spatial_weights$DengueCases,
+                  spatial_weights$Neighbors,
+                  spatial_weights$Weights,
+                  nsim = 99)
 
 ```
 
@@ -418,14 +418,14 @@ Plot both maps next to each other for comparison
 
 ```{r}
 tmap_mode("plot")
-map1 <- tm_shape(lisa) +
+localmoral_map <- tm_shape(lisa) +
   tm_fill("ii", palette = colorRamp) + 
   tm_borders(alpha = 0.5) +
   tm_view(set.zoom.limits = c(6,8)) +
   tm_layout(main.title = "Local Moran's I of Dengue Cases",
             main.title.size = 0.8)
 
-map2 <- tm_shape(lisa) +
+pvalue_map <- tm_shape(lisa) +
   tm_fill("p_ii",
           breaks = c(0, 0.001, 0.01, 0.05, 1),
           labels = c("0.001", "0.01", "0.05", "Not sig"),
@@ -434,7 +434,7 @@ map2 <- tm_shape(lisa) +
   tm_layout(main.title = "P-value of Local Moran's I",
             main.title.size = 0.8)
 
-tmap_arrange(map1, map2, ncol = 2)
+tmap_arrange(localmoral_map, pvalue_map, ncol = 2)
 ```
 
 
@@ -446,7 +446,6 @@ Filter significant values
 lisa_sig <- lisa  %>%
   filter(p_ii < 0.05)
 ```
-
 
 Plot LISA map
 
@@ -460,14 +459,132 @@ tm_shape(lisa_sig) +
   tm_borders(alpha = 0.4)
 ```
 
-```{r}
-
-```
 
 # Hot Spot and Cold Spot Area Analysis (HCSA)
 
-## Visualising hot spot and cold spot areas
+Compute local Gi* statistic for spatial autocorrelation
+
+```{r}
+sw_nb <- tainan_dengue %>%
+  mutate(Neighbors = include_self(st_contiguity(geometry)),
+         Weights = st_inverse_distance(Neighbors, geometry,
+                                        scale = 1,
+                                        alpha = 1),
+         .before = 1)
+```
+
+Calculate the Local Gi* statistic for each observation
+
+```{r}
+Hot_Cold_Spot_Analysis <- sw_nb %>% 
+  mutate(Local_Gi = local_gstar_perm(
+    DengueCases, Neighbors, Weights, nsim = 99),
+         .before = 1) %>%
+  unnest(Local_Gi)
+```
+
+## Visualising Gi*
+
+Define a new color palette
+
+```{r}
+colorRamp <- brewer.pal(n = 5, name = "YlGn")
+colorRamp <- rev(colorRamp)
+```
+
+Prepare a choropleth map using the gi_star field
+
+```{r}
+tmap_mode("plot")
+tm_shape(Hot_Cold_Spot_Analysis) +
+  tm_fill("gi_star", palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8))
+```
+
+## Visualising p-value of Hot_Cold_Spot_Analysis
+
+Prepare a choropleth map using the p_sim field
+
+```{r}
+tmap_mode("plot")
+tm_shape(Hot_Cold_Spot_Analysis) +
+  tm_fill("p_sim", palette = colorRamp) + 
+  tm_borders(alpha = 0.5)
+```
+
+## Visualising local Hot_Cold_Spot_Analysis
+
+```{r}
+# Plot both maps next to each other for comparison
+tmap_mode("plot")
+```
+
+Create a map for Local Gi* of Dengue Cases
+
+```{r}
+localGi_map <- tm_shape(Hot_Cold_Spot_Analysis) +
+  tm_fill("gi_star", palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_view(set.zoom.limits = c(6,8)) +
+  tm_layout(main.title = "Local Gi* of Dengue Cases",
+            main.title.size = 0.8)
+```
+
+Create a map for P-value of Local Gi*
+
+```{r}
+pValue_map <- tm_shape(Hot_Cold_Spot_Analysis) +
+  tm_fill("p_sim",
+          breaks = c(0, 0.001, 0.01, 0.05, 1),
+          labels = c("0.001", "0.01", "0.05", "Not sig"),
+          palette = colorRamp) + 
+  tm_borders(alpha = 0.5) +
+  tm_layout(main.title = "P-value of Local Gi*",
+            main.title.size = 0.8)
+```
+
+Arrange the two maps side by side
+
+```{r}
+tmap_arrange(localGi_map, pValue_map, ncol = 2)
+```
+
+
+Visualising hot spot and cold spot areas
+
+Define a new color palette
+
+```{r}
+colorRamp <- brewer.pal(n = 5, name = "BuPu")
+colorRamp <- rev(colorRamp)
+```
+
+Filter significant values (i.e., p-values less than 0.05)
+
+```{r}
+Significant_HCSA <- Hot_Cold_Spot_Analysis  %>%
+  filter(p_sim < 0.05)
+```
+
+Plot the significant hot spot and cold spot areas
+
+```{r}
+tmap_mode("plot")
+tm_shape(Hot_Cold_Spot_Analysis) +
+  tm_polygons() +
+  tm_borders(alpha = 0.5) +
+tm_shape(Significant_HCSA) +
+  tm_fill("gi_star", palette = colorRamp) + 
+  tm_borders(alpha = 0.4)
+```
 
 # Performing Emerging Hotspot Analysis
 
+
+
 # Conclusion
+
+```{r}
+
+```

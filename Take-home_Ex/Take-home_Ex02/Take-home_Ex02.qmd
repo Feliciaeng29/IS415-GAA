@@ -5,7 +5,7 @@ author:
 date: "February 2024"
 date-modified: "`r Sys.Date()`"
 execute: 
-  echo: false
+  echo: true
   eval: true
   warning: false
 editor: visual
@@ -609,6 +609,7 @@ dengue_grouped_ehsa <- dengue_ehsa %>%
 tainan_dengue_ehsa <- left_join(tainan, dengue_grouped_ehsa, by = c("TOWNNAME", "VILLNAME"))
 ```
 
+Selecting only necessary data
 
 ```{r}
 tainan_dengue_ehsa <- tainan_dengue_ehsa %>%

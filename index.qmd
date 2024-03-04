@@ -5,6 +5,7 @@ listing:
   contents:
     - "Take-home_Ex/Take-home_Ex02/Take-home_Ex02.qmd"
     - "Take-home_Ex/Take-home_Ex01/Take-home_Ex01.qmd"
+    - "In-class_Ex/In-class_Ex07/In-class_Ex07.html"
     - "In-class_Ex/In-class_Ex06/In-class_Ex06-GLSA.html"
     - "In-class_Ex/In-class_Ex06/In-class_Ex06-EHSA.html"
     - "In-class_Ex/In-class_Ex05/In-class_Ex05.qmd"

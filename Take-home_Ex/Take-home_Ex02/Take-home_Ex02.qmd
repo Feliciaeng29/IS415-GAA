@@ -8,6 +8,7 @@ execute:
   echo: true
   eval: true
   warning: false
+  freeze: true
 editor: visual
 ---
 
@@ -788,7 +789,7 @@ tm_shape(significant_hotspots) +
 
 # Reflection
 
-This task was tough and made me tired at first. Even though I faced many problems, I learned a lot. Throughout this assignment, I encountered numerous challenges that posed significant obstacles along the way. Despite the persistent errors and obstacles, I must acknowledge that this assignment has been a tremendous learning opportunity. While the journey was exhausting and marked by moments of wanting to give up due to repeated unsuccessful attempts, the fulfillment at the conclusion is deeply gratifying. Playing with different libraries and learning new things was fun. I am thankful and appreciative that I was ultimately able to complete the assignment.
+Reflecting on this task, I can't help but appreciate the journey it took me on. Initially, it felt daunting and exhausting, but as I persevered, I discovered immense personal and professional growth along the way. Every problem I encountered became an opportunity to learn, and each obstacle I faced was a chance to overcome and thrive. Despite the moments of frustration and doubt, I now see them as essential parts of the learning process. Looking back, I'm filled with gratitude for the valuable lessons learned and the skills acquired. The experience of exploring different libraries and delving into new knowledge was not only enjoyable but also incredibly fulfilling. As I conclude this reflection, I am thankful for the opportunity to have tackled this challenge and emerged stronger and more knowledgeable than before.
 
 ```{r}
 

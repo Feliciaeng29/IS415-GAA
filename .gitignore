@@ -5,6 +5,8 @@
 .DS_Store
 .quarto
 .RDataTmp1
+.RDataTmp3
+.RDataTmp4
 
 /.quarto/
 data/

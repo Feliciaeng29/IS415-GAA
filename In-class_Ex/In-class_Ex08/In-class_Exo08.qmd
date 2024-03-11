@@ -1,7 +1,5 @@
 ---
-title: "Hands-on Exercise 7: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
-description: |
-  In this hands on exercise, I learn how to calibrate geographically weighted regression models by using GWmodel package of R.
+title: "In Class Exercise 8"
 output:
   distill::distill_article:
     self_contained: false
@@ -23,7 +21,7 @@ output:
 The GWmodel package offers a range of localized spatial statistical techniques, including GW summary statistics, GW principal components analysis, GW discriminant analysis, and various forms of GW regression, some of which are available in both basic and robust (outlier-resistant) versions. Typically, the results or parameters obtained from GWmodel can be visually represented on maps, serving as a valuable exploratory tool that can precede and guide more conventional or advanced statistical analyses.
 
 ```{r}
-pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary)
+pacman::p_load(olsrr, corrplot, ggpubr, sf, spdep, GWmodel, tmap, tidyverse, gtsummary, ggstatsplot)
 ```
 
 # Geospatial Data Wrangling
@@ -94,6 +92,12 @@ Here, we use:
 
 - *st_as_sf()* of sf package to convert aspatial data frame to sf object and
 - *st_transform()* of **sf** package to convert the coordinates from wgs84 (i.e. crs:4326) to svy21 (i.e. crs=3414).
+
+Note:
+(WGS84: for crs: 4326)
+
+Note:
+(Always start with logitude then latitude, because we always start with the x coordinate then the y)
 
 ```{r echo=TRUE, eval=TRUE}
 condo_resale.sf <- st_as_sf(condo_resale,
@@ -258,6 +262,16 @@ Figure above reveals that there are a few statistical **outliers** with relative
 ## Multiple Linear Regression Method
 ### Visualise relationships of independent variables
 
+### In class Exercise new chart:
+
+Now we are calibrating multiple regression. It gives you all the statistical information that is not provided for corrplot
+
+```{r}
+#| fig-width: 12
+#| fig-height: 12
+ggcorrmat(condo_resale[, 5:23])
+```
+
 - It is important to ensure that the independent variables used are not highly correlated to each other. 
 - If these highly correlated independent variables are used in building a regression model by mistake, the quality of the model will be compromised. 
 - This phenomenon is known as **multicollinearity** in statistics.
@@ -277,6 +291,7 @@ corrplot(cor(condo_resale[, 5:23]), diag = FALSE, order = "AOE",
          tl.pos = "td", tl.cex = 0.5, method = "number", type = "upper")
 ```
 
+
 Results above show that:
 
 - **`Freehold`** is highly correlated to **`LEASE_99YEAR`**. 
@@ -288,6 +303,9 @@ Results above show that:
 #### Calibrate the multiple linear regression model
 
 - Use *lm()* to calibrate the multiple linear regression model.
+
+Note:
+(This is the lm method based in R. SELLING_PRICE is the dependent variable then the rest will be independent variables) 
  
 ```{r echo=TRUE, eval=TRUE}
 condo.mlr <- lm(formula = SELLING_PRICE ~ AREA_SQM + AGE  + PROX_CBD + PROX_CHILDCARE + PROX_ELDERLYCARE  + PROX_URA_GROWTH_AREA + PROX_HAWKER_MARKET  + PROX_KINDERGARTEN  + PROX_MRT  + PROX_PARK  + PROX_PRIMARY_SCH + PROX_TOP_PRIMARY_SCH + PROX_SHOPPING_MALL  + PROX_SUPERMARKET + PROX_BUS_STOP  + NO_Of_UNITS + FAMILY_FRIENDLY + FREEHOLD, data=condo_resale.sf)
@@ -315,6 +333,12 @@ ols_regress(condo.mlr1)
 ```
 
 - Herem our condo.mlr1  will contain the coefficients, residuals, effects and fitted values. We will be using the residuals and extract it as a dataframe later on to examine it closely.
+
+
+```{r}
+tbl_regression(condo.mlr1, intercept = TRUE)
+```
+
 
 ### Check for multicolinearity
 
@@ -399,6 +423,18 @@ mlr.output <- as.data.frame(condo.mlr1$residuals)
 condo_resale.res.sf <- cbind(condo_resale.sf, 
                         condo.mlr1$residuals) %>%
 rename(`MLR_RES` = `condo.mlr1.residuals`)
+```
+
+## In Class Exercise ggcoefstats: Visualise model parameter
+
+Can change it to non paramedic if data is not normal distribution.
+In this case we can do a sort in ascending order.
+
+```{r}
+#| fig-height: 12
+mlr.p <- ggcoefstats(condo.mlr1,
+                     sort = "ascending")
+mlr.p
 ```
 
 My notes:
@@ -576,7 +612,9 @@ They are all stored in a **SpatialPointsDataFrame** or **SpatialPolygonsDataFram
 
 ## Converting SDF into sf data.frame
 
-- To visualise the fields in **SDF**, we need to first covert it into **sf** data.frame
+- To visualise the fields in **SDF**, we need to first covert it into **sf** data.frame.
+
+Need to explicitly tell them that the projection is in 3414.
 
 ```{r echo=TRUE, eval=TRUE}
 condo_resale.sf.adaptive <- st_as_sf(gwr.adaptive$SDF) %>%

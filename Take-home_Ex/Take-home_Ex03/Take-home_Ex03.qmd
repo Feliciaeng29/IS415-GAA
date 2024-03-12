@@ -1,0 +1,173 @@
+---
+title: "Take Home Exercise 3"
+---
+
+Take-home Exercise 3 will be similar to one of the prototype module prepared above in term of content but with the following differences:
+
+-   You are required to prepare the prototype module report as Take-home Exercise 3 submission. This mean, it has to be published on your own coursework page.
+
+-   You are required to include a section called UI design for the different components of the UIs for the proposed design.
+
+In this take-home exercise, you are required to select one of the module of your proposed Geospatial Analytics Shiny Application and complete the following tasks:
+
+-   To evaluate and determine the necessary R packages needed for your Shiny application are supported in R CRAN,
+
+-   To prepare and test the specific R codes can be run and returned the correct output as expected,
+
+-   To determine the parameters and outputs that will be exposed on the Shiny applications, and
+
+-   To select the appropriate Shiny UI components for exposing the parameters determine above.
+
+# Required R packages for First and Second Order Spatial Point Patterns
+
+1.  **tidyverse:**
+
+    -   Purpose: A collection of packages for data manipulation and visualization, emphasizing a consistent and tidy data format.
+
+    -   Relevance to spatial order: Useful for cleaning and transforming spatial data into a structured format that facilitates analysis.
+
+2.  **knitr:**
+
+    -   Purpose: Dynamic report generation in R, allowing integration of R code and results into documents.
+
+    -   Relevance to spatial order: Enables the creation of documents that include spatial analysis results, making it easier to communicate and share findings.
+
+3.  **rgdal:**
+
+    -   Purpose: Provides bindings to the GDAL (Geospatial Data Abstraction Library) for reading and writing geospatial data formats.
+
+    -   Relevance to spatial order: Essential for handling spatial data in various formats, ensuring interoperability and compatibility.
+
+4.  **maptools:**
+
+    -   Purpose: Tools for reading and handling spatial objects, particularly shapefiles.
+
+    -   Relevance to spatial order: Facilitates the manipulation and analysis of spatial data, especially when dealing with shapefiles.
+
+5.  **sf:**
+
+    -   Purpose: Supports simple features for spatial data representation and manipulation.
+
+    -   Relevance to spatial order: Offers a modern and efficient way to handle spatial data, including points, lines, and polygons.
+
+6.  **raster:**
+
+    -   Purpose: Deals with gridded spatial data, such as satellite imagery or climate data.
+
+    -   Relevance to spatial order: Useful for working with raster data, which involves spatial information arranged in a grid.
+
+7.  **spatstat:**
+
+    -   Purpose: Analyzing spatial point patterns and processes.
+
+    -   Relevance to spatial order: Particularly focused on the first point spatial order, addressing the distribution and arrangement of individual points in space.
+
+8.  **tmap:**
+
+    -   Purpose: Creates thematic maps for visualizing spatial data.
+
+    -   Relevance to spatial order: Helps in visually exploring and interpreting spatial patterns in data.
+
+9.  **tmaptools:**
+
+    -   Purpose: Provides additional tools for working with thematic maps.
+
+    -   Relevance to spatial order: Complements tmap by offering additional functionalities for spatial data visualization.
+
+10. **gridExtra:**
+
+    -   Purpose: Extends the grid graphics system to arrange multiple grid-based figures on one page.
+
+    -   Relevance to spatial order: Useful for creating complex layouts when visualizing multiple spatial plots or maps.
+
+11. **leaflet:**
+
+    -   Purpose: Creates interactive web maps using JavaScript.
+
+    -   Relevance to spatial order: Enables the development of interactive maps, enhancing the exploration of spatial relationships and patterns.
+
+12. **OpenStreetMap:**
+
+    -   Purpose: Accesses and interacts with OpenStreetMap data.
+
+    -   Relevance to spatial order: Allows integration of OpenStreetMap data into spatial analysis, providing additional context to spatial patterns.
+
+13. **ggstatsplot:**
+
+    -   Purpose: Enhances ggplot2 with statistical summaries and plots.
+
+    -   Relevance to spatial order: Can be used for adding statistical summaries to spatial visualizations created with ggplot2.
+
+14. **statsExpressions:**
+
+    -   Purpose: Creates customizable expressions for statistical summaries.
+
+    -   Relevance to spatial order: Useful for customizing the presentation of statistical information in spatial analysis results.
+
+15. **lubridate:**
+
+    -   Purpose: Facilitates the manipulation of date-time objects.
+
+    -   Relevance to spatial order: Helps in handling temporal aspects of spatial data, which is crucial in understanding how spatial patterns change over time.
+
+```{r}
+pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra)
+```
+
+# Data that is available from Airbnb
+
+[InsideAirbnb provides a snapshot of the following information:]{.underline}
+
+-   Listings - Summary information on listings
+
+-   Detailed Listings - Detailed listing information of airbnb for rent
+
+-   Calendar - Detailed calendar data for listings
+
+-   Reviews - Summary review data
+
+-   Detailed Reviews - Detailed review data for listings
+
+-   Neighbourhoods - list of neighbourhoods in the city and a neighbourhood GeoJSON file
+
+## Readind data from Airbnb
+
+```{r}
+listings <- read_csv("data/listings.csv")
+d_listings <- read_csv("data/detailedlistings.csv")
+#calendar <- read_csv("data/calendar.csv")
+reviews <- read_csv("data/reviews.csv")
+d_reviews <- read_csv("data/detailedreviews.csv")
+neighbourhoods <- read_csv("data/neighbourhoods.csv")
+```
+
+## Reading Spatial data from Airbnb
+
+```{r}
+nhood_map_sf <- st_read(dsn = "data/neighbourhoods.geojson", 
+                        layer="neighbourhoods") %>%
+                st_transform(crs = 3414)
+```
+
+# Data Cleaning
+
+# Data that will be used for wrangling subzone map
+
+-   MP14_SUBZONE_WEB_PL.shp
+
+```{r}
+mpsz_sf <- st_read(dsn = "data/geospatial",
+                layer = "MP14_SUBZONE_WEB_PL")
+```
+
+# UI for Proposed Idea
+
+## Kernel Density Estimation
+
+![](images/Group 8.png)
+
+## Second Order Analysis & Chloropleth Map
+
+![](images/Group 10.png)
+
+![](images/Group 9.png)

@@ -3,6 +3,7 @@ title: "IS415-GAA"
 
 listing:
   contents:
+    - "Take-home_Ex/Take-home_Ex03/Take-home_Ex03.qmd"
     - "Take-home_Ex/Take-home_Ex02/Take-home_Ex02.qmd"
     - "Take-home_Ex/Take-home_Ex01/Take-home_Ex01.qmd"
     - "In-class_Ex/In-class_Ex07/In-class_Ex07.qmd"

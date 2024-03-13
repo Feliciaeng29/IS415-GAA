@@ -152,6 +152,14 @@ nhood_map_sf <- st_read(dsn = "data/neighbourhoods.geojson",
 # Data Cleaning
 
 ```{r}
+glimpse(listings)
+glimpse(reviews)
+glimpse(d_reviews)
+glimpse(calendar)
+glimpse(d_listings)
+```
+
+```{r}
 
 ```
 

@@ -135,7 +135,7 @@ pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmapt
 ```{r}
 listings <- read_csv("data/listings.csv")
 d_listings <- read_csv("data/detailedlistings.csv")
-#calendar <- read_csv("data/calendar.csv")
+calendar <- read_csv("data/calendar.csv")
 reviews <- read_csv("data/reviews.csv")
 d_reviews <- read_csv("data/detailedreviews.csv")
 neighbourhoods <- read_csv("data/neighbourhoods.csv")
@@ -164,10 +164,10 @@ mpsz_sf <- st_read(dsn = "data/geospatial",
 
 ## Kernel Density Estimation
 
-![](images/Group 8.png)
+![](images/Group%208.png)
 
 ## Second Order Analysis & Chloropleth Map
 
-![](images/Group 10.png)
+![](images/Group%2010.png)
 
-![](images/Group 9.png)
+![](images/Group%209.png)

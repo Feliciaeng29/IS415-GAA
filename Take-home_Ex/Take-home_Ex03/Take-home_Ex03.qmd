@@ -151,6 +151,10 @@ nhood_map_sf <- st_read(dsn = "data/neighbourhoods.geojson",
 
 # Data Cleaning
 
+```{r}
+
+```
+
 # Data that will be used for wrangling subzone map
 
 -   MP14_SUBZONE_WEB_PL.shp

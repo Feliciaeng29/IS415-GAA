@@ -1,5 +1,5 @@
 ---
-title: "Hands-on Exercise 7: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
+title: "Hands-on Exercise 8: Calibrating Hedonic Pricing Model for Private Highrise Property with GWR Method"
 description: |
   In this hands on exercise, I learn how to calibrate geographically weighted regression models by using GWmodel package of R.
 output:

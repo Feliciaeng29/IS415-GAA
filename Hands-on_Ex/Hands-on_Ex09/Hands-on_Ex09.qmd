@@ -9,6 +9,7 @@ output:
     toc_depth: 4
 ---
 
+
 ## **The Data**
 
 -   **Aspatial dataset**:
@@ -398,7 +399,7 @@ GRF_pred <- read_rds("data/model/GRF_pred.rds")
 GRF_pred_df <- as.data.frame(GRF_pred)
 ```
 
-`cbind()` is used to append the predicted values onto test_data
+`cbind()` is used to append the predicted values onto test_data
 
 ```{r}
 test_data_p <- cbind(test_data, GRF_pred_df)

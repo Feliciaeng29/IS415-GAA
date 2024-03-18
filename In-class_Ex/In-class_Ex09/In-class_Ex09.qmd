@@ -1,52 +1,61 @@
 ---
 title: "In class Exercise 9"
+execute: 
+  warning: false
+  eval: true
+  echo: true
+  freeze: true
+date: "13 March, 2024"
+date-modified: "last-modified"
 ---
 
-## Installing packages
 
-rpart and rpart.plot: recursive conditioning
-ggstatsplot: correlation analysis
+#  Installing Packages
 
 ```{r}
-pacman::p_load(sf, spdep, GWmodel, 
-               SpatialML, tmap, 
-               tidymodels, tidyverse, 
-               gtsummary, 
-               rpart, rpart.plot, 
-               ggstatsplot, performance)
+pacman::p_load(sf, spdep, GWmodel, SpatialML, tmap, rsample, tidymodels, tidyverse, gtsummary, rpart, rpart.plot, ggstatsplot, performance)
 ```
 
-Reading the input data sets. It is in simple feature data frame.
+# Importing Data
+
+Read the input data sets that are in simple feature data frame.
 
 ```{r}
 rs_sf <- read_rds("data/rds/HDB_resale.rds")
 ```
 
-Next, we reveal the properties of *rs_sf* object.
+Reveal the properties of `rs_sf`.
 
 ```{r}
 rs_sf
 ```
 
-## Data Sampling
-
-The entire data are split into training and test data sets with 65% and 35% respectively by using *initial_split()* of **rsample** package. rsample is one of the package of tigymodels.
-
-Always remember to put set.seed(1234), if not the result will not be consistent.
-Prop explain how you split the data how many perc test and training
+# Train-test Split
 
 ```{r}
 set.seed(1234)
-resale_split <- initial_split(
-  rs_sf, 
-  prop = 5/10,)
+resale_split <- initial_split(rs_sf, 
+                              prop = 5/10,)
 train_sf <- training(resale_split)
 test_sf <- testing(resale_split)
 ```
 
-### Converting from sf objects to data.frame gwModel ans spatial ML libraries require to input data
+Save the train and test data.
 
 ```{r}
+write_rds(train_sf, "data/rds/train_sf.rds")
+write_rds(test_sf, "data/rds/test_sf.rds")
+```
+
+```{r}
+train_sf <- read_rds("data/rds/train_sf.rds")
+test_sf <- read_rds("data/rds/test_sf.rds")
+```
+
+Remove the geometry attribute to create the tibble table frame for train and test.
+
+```{r}
+
 train_df <- train_sf %>%
   st_drop_geometry() %>%
   as.data.frame()
@@ -54,46 +63,58 @@ train_df <- train_sf %>%
 test_df <- test_sf %>%
   st_drop_geometry() %>%
   as.data.frame()
+
+write_rds(train_df, "data/rds/train_df.rds")
+write_rds(test_df, "data/rds/test_df.rds")
 ```
 
-Save the output files
+```{r}
+train_df <- read_rds("data/rds/train_df.rds")
+test_df <- read_rds("data/rds/test_df.rds")
+```
 
-Optional:
-write_rds(train_df, "data/model/train_df.rds")
-write_rds(test_df, "data/model/test_df.rds")
-
-
-## Retrieving stored data
-
-Optional:
-train_df <- read_rds("data/model/train_df.rds")
-test_df <- read_rds("data/model/test_df.rds")
-
-## Computing correlation Matrix
+# Computing Correlation Matrix
 
 ```{r}
 #| fig-width: 12
+#| Fig-height: 12
 
 rs_sf1 <- rs_sf %>%
   st_drop_geometry()
-ggcorrmat(rs_sf1[, 2:17])
+
+ggcorrmat(rs_sf1[,2:17])
 ```
 
-## **Building a non-spatial multiple linear regression**
+-   This step is not critical for predictive modelling.
+
+# MLR Model
 
 ```{r}
 rs_mlr <- lm(RESALE_PRICE ~ FLOOR_AREA_SQM +
-                  STOREY_ORDER + REMAINING_LEASE_MTHS +
-                  PROX_CBD + PROX_ELDERLYCARE + PROX_HAWKER +
-                  PROX_MRT + PROX_PARK + PROX_MALL + PROX_CHAS +
-                  PROX_SUPERMARKET + WITHIN_350M_KINDERGARTEN +
-                  WITHIN_350M_CHILDCARE + WITHIN_350M_BUS +
+                  STOREY_ORDER + 
+               REMAINING_LEASE_MTHS +
+                  PROX_CBD + 
+               PROX_ELDERLYCARE + 
+               PROX_HAWKER +
+                  PROX_MRT + 
+               PROX_PARK + 
+               PROX_MALL + 
+                  PROX_SUPERMARKET +
+               PROX_CHAS +
+               WITHIN_350M_KINDERGARTEN +
+                  WITHIN_350M_CHILDCARE + 
+               WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
                 data=train_df)
-summary(rs_mlr)
 ```
 
-## Revisiting mlr model
+```{r}
+tbl_regression(rs_mlr)
+```
+
+-   All the variables are significant.
+
+## Revision
 
 ```{r}
 train_df <- train_df %>%
@@ -106,16 +127,19 @@ test_sf <- test_sf %>%
   select(-c(PROX_CHAS))
 ```
 
+::: callout-note
+CHAS clinics are clinics under a government subsidy scheme for a selected population eligible for various tiered subsidies.
+:::
+
 ```{r}
-rs_mlr <- lm(RESALE_PRICE ~ 
-               FLOOR_AREA_SQM +
+rs_mlr <- lm(RESALE_PRICE ~ FLOOR_AREA_SQM +
                   STOREY_ORDER + 
                REMAINING_LEASE_MTHS +
                   PROX_CBD + 
                PROX_ELDERLYCARE + 
                PROX_HAWKER +
                   PROX_MRT + 
-               PROX_PARK +
+               PROX_PARK + 
                PROX_MALL + 
                   PROX_SUPERMARKET + 
                WITHIN_350M_KINDERGARTEN +
@@ -123,35 +147,33 @@ rs_mlr <- lm(RESALE_PRICE ~
                WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
                 data=train_df)
-summary(rs_mlr)
 ```
 
+# Extracting Coordinates 
 
-## Preparing coordinates data 
-
-The code extract the x, y coordinates of the full, training and test data sets.
+We need to get the coordinate pairs from the training and testing data set.
 
 ```{r}
+
 coords <- st_coordinates(rs_sf)
 coords_train <- st_coordinates(train_sf)
 coords_test <- st_coordinates(test_sf)
 ```
 
-## Decision Tree
-
-This R code snippet trains a decision tree model using the rpart() function, employing various predictors such as floor area, storey order, remaining lease months, and proximity indicators to amenities like malls, parks, and public transportation. Additionally, binary indicators are utilized to denote the presence of amenities within specific distances from the property. The model is trained on a dataset (train_df) to predict resale prices (RESALE_PRICE). After fitting the model, the summary() function is called to provide a concise overview of the model's structure and potentially its predictive performance. Overall, the code aims to build and assess a decision tree model for predicting property resale prices based on a range of relevant features.
-
+# Building Recursive Partition Plot
 
 ```{r}
-rs_rp <- rpart(RESALE_PRICE ~ 
-               FLOOR_AREA_SQM +
+set.seed(1234)
+
+rs_rp <- rpart(
+  RESALE_PRICE  ~ FLOOR_AREA_SQM +
                   STOREY_ORDER + 
                REMAINING_LEASE_MTHS +
                   PROX_CBD + 
                PROX_ELDERLYCARE + 
                PROX_HAWKER +
                   PROX_MRT + 
-               PROX_PARK +
+               PROX_PARK + 
                PROX_MALL + 
                   PROX_SUPERMARKET + 
                WITHIN_350M_KINDERGARTEN +
@@ -159,43 +181,27 @@ rs_rp <- rpart(RESALE_PRICE ~
                WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
                 data=train_df)
-summary(rs_rp)
 ```
 
-## Plotting the decision tree
+Plot the trees out.
 
 ```{r}
 rpart.plot(rs_rp)
 ```
 
-
-The ranger() function in R is used for building Random Forest models, which are a type of ensemble learning method.
-
-A Random Forest model is a popular ensemble learning technique used for both classification and regression tasks in machine learning. It's an ensemble method because it combines the predictions from multiple individual models to produce a more robust and accurate final prediction.
-
-Here's how a Random Forest model works:
-
-Building Multiple Decision Trees: Instead of relying on a single decision tree, a Random Forest constructs a multitude of decision trees during training. Each tree is trained independently on a random subset of the training data and a random subset of the features.
-
-Random Feature Selection: At each node of each decision tree, a random subset of features is considered for splitting. This randomness helps to decorrelate the trees, making them more diverse and less prone to overfitting.
-
-Voting or Averaging: For regression tasks, the predictions of all trees are averaged to produce the final prediction. For classification tasks, each tree "votes" for a class, and the most popular class is chosen as the final prediction.
-
-Bootstrap Aggregating (Bagging): Random Forest uses a technique called bagging, which involves training each tree on a bootstrapped sample of the training data. This means that each tree is trained on a randomly selected subset of the training data with replacement.
-
-The key advantages of Random Forest models include their robustness to overfitting, ability to handle high-dimensional data, and capability to capture complex relationships between features and the target variable. They are also less sensitive to outliers and noise in the data compared to individual decision trees. Additionally, Random Forest models provide estimates of feature importance, which can be valuable for understanding the underlying patterns in the data.
+# Building the Random Forest
 
 ```{r}
 set.seed(1234)
-rs_rf <- ranger(RESALE_PRICE ~ 
-               FLOOR_AREA_SQM +
+rs_rf <- ranger(
+  RESALE_PRICE  ~ FLOOR_AREA_SQM +
                   STOREY_ORDER + 
                REMAINING_LEASE_MTHS +
                   PROX_CBD + 
                PROX_ELDERLYCARE + 
                PROX_HAWKER +
                   PROX_MRT + 
-               PROX_PARK +
+               PROX_PARK + 
                PROX_MALL + 
                   PROX_SUPERMARKET + 
                WITHIN_350M_KINDERGARTEN +
@@ -203,34 +209,149 @@ rs_rf <- ranger(RESALE_PRICE ~
                WITHIN_350M_BUS +
                   WITHIN_1KM_PRISCH,
                 data=train_df,
-               importance = "impurity")
-rs_rf
+  importance = "impurity")
+
+write_rds(rs_rf, "data/models/rs_rf.rds")
 ```
+
+-   The "impurity" measure is the Gini index for classification, the variance of the responses for regression and the sum of statistics for survival.
 
 ```{r}
 rs_rf <- read_rds("data/models/rs_rf.rds")
 rs_rf
 ```
 
+## Variable Importance
+
+Variable importance or feature importance scores are indicative of how "important" the variable is to our model.
+
+By using impurity importance argument in our ranger function earlier, `rs_rf` has contains the generated `variable.importance`. Now we will extract `variable.importance` and save it into `vi`.
+
 ```{r}
 vi <- as.data.frame(rs_rf$variable.importance)
-
 vi$variables <- rownames(vi)
-vi <- vi %>%
+vi <- vi%>%
   rename(vi = "rs_rf$variable.importance")
 ```
 
-* Important: include (stat = "identity") to aggregate the data here.
-Only then it will be able to plot if not will generate error
+Plot the graph.
 
 ```{r}
 ggplot(data = vi,
        aes(x = vi,
-           y = reorder(variables, vi))) + 
-  geom_bar(stat= "identity")
+           y = reorder(variables, vi))) +
+  geom_bar(stat="identity", color = "black", fill = "blue")
+```
+
+-   Since there is no sign of quasi-complete or complete separation, we can proceed to calibrate our bandwidth.
+
+# Calculating Adaptive Bandwidth
+
+```{r}
+set.seed(1234)
+gwRF_adaptive <- grf(formula = RESALE_PRICE ~ FLOOR_AREA_SQM + 
+                       STOREY_ORDER +
+                       REMAINING_LEASE_MTHS + 
+                       PROX_CBD + 
+                       PROX_ELDERLYCARE +
+                       PROX_HAWKER + 
+                       PROX_MRT + 
+                       PROX_PARK + 
+                       PROX_MALL +
+                       PROX_SUPERMARKET + 
+                       WITHIN_350M_KINDERGARTEN +
+                       WITHIN_350M_CHILDCARE + 
+                       WITHIN_350M_BUS +
+                       WITHIN_1KM_PRISCH,
+                     dframe=train_df, 
+                     bw = 55,
+                     step = 1,
+                     nthreads = 16,
+                     forest = FALSE,
+                     weighted = TRUE,
+                     kernel="adaptive",
+                     coords=coords_train)
+```
+
+```{r}
+rs_grf <- read_rds("data/models/rs_grf.rds")
+```
+
+```{r}
+test_df <- cbind(test_sf, coords_test) %>%
+  st_drop_geometry()
+
+write_rds(test_df, "data/rds/test_df")
+```
+
+# Predicting with test data
+
+Next, `predict.grf()` of spatialML will be used to predict the resale value by using the test data and gwRF_adaptive model calibrated earlier.
+
+```{r}
+grf_pred <- read_rds("data/models/grf_pred.rds")
+grf_pred_df <- as.data.frame(grf_pred)
 ```
 
 
+Append the predicted values onto test_df.
+
+```{r}
+test_pred <- test_df %>%
+  select(RESALE_PRICE) %>%
+  cbind(grf_pred_df)
+```
+
+
+## Saving outputs
+
+```{r}
+rf_pred <- predict(rs_rf, test_df)
+```
+
+```{r}
+rf_pred_df <- as.data.frame(rf_pred$predictions) %>% 
+  rename(rf_pred = "rf_pred$predictions")
+```
+
+```{r}
+mlr_pred <- predict(rs_mlr, test_df)
+```
+
+```{r}
+mlr_pred_df <- as.data.frame(mlr_pred) %>%
+  rename(mlr_pred = "mlr_pred")
+```
+
+```{r}
+test_pred <- cbind(test_pred, rf_pred_df)
+test_pred <- cbind(test_pred, mlr_pred_df)
+```
+
+
+
+```{r}
+yardstick::rmse(test_pred,
+                RESALE_PRICE,
+                mlr_pred)
+```
+
+```{r}
+mc <- test_pred %>%
+  pivot_longer(cols = c(2:4),
+               names_to = "models",
+               values_to = "predicted")
+```
+
+
+
+
+```{r}
+ggplot(data = mc,
+       aes(x=predicted,
+           y=RESALE_PRICE))  +
+  geom_point()
+```
 
 
 

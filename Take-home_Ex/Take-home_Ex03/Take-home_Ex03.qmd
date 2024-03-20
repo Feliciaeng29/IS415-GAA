@@ -111,7 +111,7 @@ In this take-home exercise, you are required to select one of the module of your
     -   Relevance to spatial order: Helps in handling temporal aspects of spatial data, which is crucial in understanding how spatial patterns change over time.
 
 ```{r}
-pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra)
+pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra, skimr)
 ```
 
 # Data that is available from Airbnb
@@ -159,9 +159,139 @@ glimpse(calendar)
 glimpse(d_listings)
 ```
 
+Change the data type of id to characters
+
+```{r}
+listings <- listings %>% mutate_at(vars(id, host_id), as.character)
+reviews <- reviews %>% mutate_at(vars(listing_id), as.character)
+d_reviews <- d_reviews %>% mutate_at(vars(id, reviewer_id, listing_id), as.character)
+calendar <- calendar %>% mutate_at(vars(listing_id), as.character)
+d_listings <- d_listings %>% mutate_at(vars(host_id, id), as.character)
+```
+
+Change price in detailed listings to numerical & remove $ and, symbol in cloumns where currency is read as character.
+
+```{r}
+strip_dollars = function(x) {as.numeric(gsub("[\\$,]", "", x))}
+d_listings[,61:65] <- sapply(d_listings[,61:65], strip_dollars)
+d_listings[,67] <- sapply(d_listings[,67], strip_dollars)
+```
+
+## Check for Missing Data 
+
+We check if there is any missing data and decide how to handle it. Missing data will include zero value, which we need to change to be able to analyse correctly.
+
+### Listings data 
+
+```{r}
+skim(listings)
+```
+
+### Calender
+
+```{r}
+skim(calendar)
+```
+
+### Reviews and Detailed Reviews
+
+```{r}
+skim(reviews)
+```
+```{r}
+skim(d_reviews)
+```
+
+### Detailed Listings
+
+```{r}
+skim(d_listings)
+```
+
+
+# Data Wrangling
+
+We need to convert the listings data into sf object. 
+
+```{r}
+listings_sf <- listings %>% 
+                st_as_sf(coords = c("longitude", "latitude"),
+                         crs = 4326) %>%
+                st_transform(crs = 3414)
+```
+
+Display the 10 records and show the geometry type and we can check that projected CRIS is svy21.
+
+```{r}
+head(listings_sf)
+```
+
+Show the point details of the geometry column, givin gthe x, y coordianted in SVY21
+
+```{r}
+glimpse(listings_sf)
+```
+
+# Possible EDA
+
+## Type of Accomdation
+
+### ROom types by region
+
+Summarizing the types of listings by neighbourhood groups
+
+```{r}
+regionlist <- listings %>%
+              group_by(neighbourhood_group, room_type) %>%
+              summarise(
+                num_listings = n(),
+                avg_price = mean(price),
+                med_price = median(price))
+```
+Plotting the type of accomdation by region
+
+```{r}
+ggplot(regionlist, aes(x=room_type, fill = room_type)) + theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+      geom_col(aes(y = num_listings)) +
+      facet_grid(cols=vars(neighbourhood_group), margins = T, labeller = labeller(neighbourhood_group = label_wrap_gen(width = 5, multi_line = TRUE))) +
+      labs(x = "", y = "No. of listings", fill = "Room Type")
+```
+
+## Pricing of Room Types
+
+Remove price outliers
+
+```{r}
+outlier_price <- quantile(listings$price, 0.99, na.rm = TRUE)
+listings_cleanprice <- listings %>% filter(price <= outlier_price)
+```
+
+Plot boxplot of prices for each room type
+
+```{r}
+p1 <- ggplot(listings, aes(x=room_type, fill = room_type)) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank(), legend.position = "None") + 
+  geom_boxplot(aes(y=price)) +
+  labs(x = "", y = "Listing Price", fill = "Room Type", title = "Listing price")
+```
+
+Cleaned pricing
+
+```{r}
+p2 <- ggplot(listings_cleanprice, aes(x=room_type, fill = room_type)) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) + 
+  geom_boxplot(aes(y=price)) +
+  labs(x = "", y = "Listing Price", fill = "Room Type", title = "Listing price (outliers removed)")
+
+grid.arrange(p1, p2, nrow = 1)
+
+```
+
+
 ```{r}
 
 ```
+
 
 # Data that will be used for wrangling subzone map
 

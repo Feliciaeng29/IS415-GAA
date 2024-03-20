@@ -111,7 +111,7 @@ In this take-home exercise, you are required to select one of the module of your
     -   Relevance to spatial order: Helps in handling temporal aspects of spatial data, which is crucial in understanding how spatial patterns change over time.
 
 ```{r}
-pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra, skimr)
+pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra, skimr, rstantools)
 ```
 
 # Data that is available from Airbnb
@@ -232,11 +232,11 @@ Show the point details of the geometry column, givin gthe x, y coordianted in SV
 glimpse(listings_sf)
 ```
 
-# Possible EDA
+# Data Analysis
 
 ## Type of Accomdation
 
-### ROom types by region
+### Room types by region
 
 Summarizing the types of listings by neighbourhood groups
 
@@ -287,10 +287,106 @@ grid.arrange(p1, p2, nrow = 1)
 
 ```
 
+## Room Types by Price and Region
 
 ```{r}
-
+ggplot(listings_cleanprice, aes(x=neighbourhood_group, fill = neighbourhood_group)) + 
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  geom_boxplot(aes(y=price)) +
+  facet_grid(~room_type, labeller = labeller(room_type = label_wrap_gen(width = 5, multi_line = TRUE))) +
+  labs(x = "", y = "Listing Price", fill = "Region")
 ```
+
+# Deductive Data Analysis
+
+We utilize ggstatsplot to conduct confirmatory data analysis on prices across various neighborhoods. Our null hypothesis posits that there is no difference in listing prices among different neighborhood groups. We reject this hypothesis if the p-value exceeds 0.05 at a 95% significance level. Initially, we extract only the necessary variables (neighbourhood_group, room_type, and price) and feed them into the ggbetweenstats() function. This function generates the p-value and a violin plot illustrating listing prices categorized by neighborhood group. Additionally, it computes pairwise comparisons between the grouped variables, displaying only the significant comparisons along with their respective p-values.
+
+```{r}
+conftest <- listings_cleanprice %>% dplyr::select(neighbourhood_group, room_type, price)
+ggbetweenstats(
+  data = conftest,
+  x = neighbourhood_group,
+  y = price
+)
+```
+
+```{r}
+conftest2 <- conftest %>% filter(room_type != "Shared room", room_type != "Hotel room")
+grouped_ggbetweenstats(
+  data = conftest2,
+  x = neighbourhood_group,
+  y = price,
+  grouping.var = room_type,
+  ggsignif.args = list(textsize = 4, tip_length = 0.01),
+  p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
+  # adding new components to `ggstatsplot` default
+  ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
+  k = 3,
+  title.prefix = "Room Type",
+  palette = "default_jama",
+  package = "ggsci",
+  plotgrid.args = list(nrow = 2),
+  title.text = "Differences in listing prices by neighbourhoods for different room types"
+)
+```
+
+```{r}
+sharedrooms <- conftest %>% filter(room_type == "Shared room")
+ ggbetweenstats(
+   data = sharedrooms,
+   x = neighbourhood_group,
+   y = price
+)
+```
+
+4.2 Hosts & Listings
+4.2.1 Hosts with multiple listings
+
+# Spatial Distribution of Airbnb listings in Singapore
+
+## Handling Spatial Data Outliers
+
+Identify listings that fall within the Water Cachement Area
+
+```{r}
+filter(listings, neighbourhood == "Central Water Catchment")
+```
+Remove listings in the Central Water Catchment, Sungei Kadut and Mandai areas
+
+```{r}
+listings_clean <- filter(listings_sf, !neighbourhood %in% c("Central Water Catchment", "Sungei Kadut", "Mandai", "Western Water Catchment")) %>% st_as_sf()
+```
+
+## Mapping Airbnb listings in Singapore
+
+### Loading basemap raster with bounding box
+
+Read in OSM raster of listings data for plot view and create bounding box 
+
+```{r}
+sg_osm <- tmaptools::read_osm(listings_clean, ext=1.3)
+bb_sg_osm <- st_bbox(listings_clean, crs = 3414)
+```
+
+#### Listing by room types and neighbourhood
+
+Plotting neighbourhood listings on tmap
+
+tmap_mode("view")
+
+# Plotting points
+
+tmap_options(check.and.fix = TRUE)  # Set option to check and fix invalid polygons
+tm_basemap(leaflet::providers$OpenStreetMap) +
+tm_shape(nhood_map_sf) +
+  tm_polygons(alpha = 0.3) +
+tm_shape(listings_clean) +
+  tm_symbols(col="room_type", size = 0.2) +
+  tm_view(set.zoom.limits = c(11, 17)) +
+  tm_facets(by="room_type") +
+  tm_layout(legend.show = FALSE)  # Change to FALSE for consistency
+
+
 
 
 # Data that will be used for wrangling subzone map

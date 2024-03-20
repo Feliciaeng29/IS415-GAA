@@ -281,6 +281,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#room-types-by-price-and-region" id="toc-room-types-by-price-and-region" class="nav-link" data-scroll-target="#room-types-by-price-and-region">Room Types by Price and Region</a></li>
   </ul></li>
   <li><a href="#deductive-data-analysis" id="toc-deductive-data-analysis" class="nav-link" data-scroll-target="#deductive-data-analysis">Deductive Data Analysis</a></li>
+  <li><a href="#hosts-listings" id="toc-hosts-listings" class="nav-link" data-scroll-target="#hosts-listings">Hosts &amp; Listings</a>
+  <ul class="collapse">
+  <li><a href="#host-with-multiple-listings" id="toc-host-with-multiple-listings" class="nav-link" data-scroll-target="#host-with-multiple-listings">Host with multiple listings</a>
+  <ul class="collapse">
+  <li><a href="#distribution-of-host-type-and-room-type" id="toc-distribution-of-host-type-and-room-type" class="nav-link" data-scroll-target="#distribution-of-host-type-and-room-type">Distribution of host type and room type</a></li>
+  <li><a href="#analysis-of-price-of-room-types-by-single-or-multiple-hosts" id="toc-analysis-of-price-of-room-types-by-single-or-multiple-hosts" class="nav-link" data-scroll-target="#analysis-of-price-of-room-types-by-single-or-multiple-hosts">Analysis of price of room types by single or multiple hosts</a></li>
+  </ul></li>
+  <li><a href="#which-year-did-the-hosts-join-airbnb" id="toc-which-year-did-the-hosts-join-airbnb" class="nav-link" data-scroll-target="#which-year-did-the-hosts-join-airbnb">Which year did the hosts join airbnb</a></li>
+  </ul></li>
   <li><a href="#spatial-distribution-of-airbnb-listings-in-singapore" id="toc-spatial-distribution-of-airbnb-listings-in-singapore" class="nav-link" data-scroll-target="#spatial-distribution-of-airbnb-listings-in-singapore">Spatial Distribution of Airbnb listings in Singapore</a>
   <ul class="collapse">
   <li><a href="#handling-spatial-data-outliers" id="toc-handling-spatial-data-outliers" class="nav-link" data-scroll-target="#handling-spatial-data-outliers">Handling Spatial Data Outliers</a></li>
@@ -2723,7 +2732,172 @@ Adding another scale for y, which will replace the existing scale.</code></pre>
 <p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
-<p>4.2 Hosts &amp; Listings 4.2.1 Hosts with multiple listings</p>
+</section>
+<section id="hosts-listings" class="level1">
+<h1>Hosts &amp; Listings</h1>
+<section id="host-with-multiple-listings" class="level2">
+<h2 class="anchored" data-anchor-id="host-with-multiple-listings">Host with multiple listings</h2>
+<p>Create a table of percetnage of hosts by number of listings</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>list_byhost <span class="ot">&lt;-</span> listings <span class="sc">%&gt;%</span></span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">group_by</span>(host_id, host_name) <span class="sc">%&gt;%</span></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"number_of_listings"</span>, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">group_by</span>(number_of_listings) <span class="sc">%&gt;%</span></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>                <span class="fu">count</span>(<span class="at">name =</span> <span class="st">"number_of_hosts"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Plot above table</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(list_byhost, <span class="fu">aes</span>(<span class="at">x=</span>number_of_listings, <span class="at">y=</span> number_of_hosts<span class="sc">/</span><span class="fu">sum</span>(number_of_hosts)<span class="sc">*</span><span class="dv">100</span>)) <span class="sc">+</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span><span class="st">"Percentage of hosts"</span>, <span class="at">title =</span> <span class="st">"% of hosts vs number of listings"</span>, <span class="at">x =</span> <span class="st">"number of listings"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>To explore the whether the market is dominated by hosts with single or multiple listings, we plot a Pareto chart by adding the cumulative frequency of the number of listings of hosts, to a descending list of airbnb rentals by host. We see that almost 75% of the Airbnb ‘stock’ are taken up by hosts with multiple listings.</p>
+<p>There are currently no regulations or legislation around the number of listings that a host may have, unlike in other cities that regulate the maximum number of listings (e.g.&nbsp;New York). People with more than 1 listing are likely to be agents managing these properties on behalf of landlords.</p>
+<p>However, there are restrictions on the minimum stay for short term rentals: 3 months for private housing and 6 months for HDB flats. This means that typical tourist stays (e.g.&nbsp;2-7 days) in Airbnb listings would technically be illegal. Despite this, 89% of listings have a minimum stay of less than the legislated minimum stay.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>list_byhost <span class="ot">&lt;-</span> list_byhost[<span class="fu">order</span>(list_byhost<span class="sc">$</span>number_of_listings, <span class="at">decreasing =</span> <span class="cn">TRUE</span>),]</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>list_byhost<span class="sc">$</span>number_of_listings1 <span class="ot">&lt;-</span> <span class="fu">factor</span>(list_byhost<span class="sc">$</span>number_of_listings, <span class="at">levels =</span> list_byhost<span class="sc">$</span>number_of_listings)</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>list_byhost<span class="sc">$</span>listfreq <span class="ot">&lt;-</span> list_byhost<span class="sc">$</span>number_of_hosts <span class="sc">*</span> list_byhost<span class="sc">$</span>number_of_listings</span>
+<span id="cb59-4"><a href="#cb59-4" aria-hidden="true" tabindex="-1"></a>list_byhost<span class="sc">$</span>cumul <span class="ot">&lt;-</span> <span class="fu">cumsum</span>(list_byhost<span class="sc">$</span>listfreq)</span>
+<span id="cb59-5"><a href="#cb59-5" aria-hidden="true" tabindex="-1"></a>nr <span class="ot">&lt;-</span> <span class="fu">nrow</span>(list_byhost)</span>
+<span id="cb59-6"><a href="#cb59-6" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="fu">sum</span>(list_byhost<span class="sc">$</span>listfreq)</span>
+<span id="cb59-7"><a href="#cb59-7" aria-hidden="true" tabindex="-1"></a>y2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"  0%"</span>, <span class="st">" 10%"</span>, <span class="st">" 20%"</span>, <span class="st">" 30%"</span>, <span class="st">" 40%"</span>, <span class="st">" 50%"</span>, <span class="st">" 60%"</span>, <span class="st">" 70%"</span>, <span class="st">" 80%"</span>, <span class="st">" 90%"</span>, <span class="st">"100%"</span>)</span>
+<span id="cb59-8"><a href="#cb59-8" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(list_byhost, <span class="fu">aes</span>(<span class="at">x=</span>number_of_listings1)) <span class="sc">+</span></span>
+<span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="fu">aes</span>(<span class="at">y=</span>number_of_hosts), <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">stat =</span> <span class="st">"identity"</span>) <span class="sc">+</span></span>
+<span id="cb59-10"><a href="#cb59-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x=</span>number_of_listings1, <span class="at">y=</span>cumul)) <span class="sc">+</span></span>
+<span id="cb59-11"><a href="#cb59-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>number_of_listings1, <span class="at">y=</span>cumul)) <span class="sc">+</span></span>
+<span id="cb59-12"><a href="#cb59-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_path</span>(<span class="fu">aes</span>(<span class="at">y=</span>cumul, <span class="at">group=</span><span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb59-13"><a href="#cb59-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y=</span><span class="st">"Frequency"</span>, <span class="at">title =</span> <span class="st">"Pareto Chart of hosts and listings"</span>, <span class="at">x =</span> <span class="st">"No. of listings"</span>) <span class="sc">+</span></span>
+<span id="cb59-14"><a href="#cb59-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.margin =</span> <span class="fu">margin</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="dv">1</span>), <span class="at">unit=</span><span class="st">"cm"</span>), <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle=</span><span class="dv">90</span>, <span class="at">vjust=</span><span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb59-15"><a href="#cb59-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">annotate</span>(<span class="st">"text"</span>, <span class="at">x =</span> nr <span class="sc">+</span> <span class="dv">3</span>, <span class="at">y =</span> <span class="fu">seq</span>(<span class="dv">0</span>, N, N<span class="sc">/</span><span class="dv">10</span>), <span class="at">label =</span> y2, <span class="at">size =</span> <span class="fl">3.5</span>, <span class="at">hjust =</span> <span class="st">"inward"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_line()`: Each group consists of only one observation.
+ℹ Do you need to adjust the group aesthetic?</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<section id="distribution-of-host-type-and-room-type" class="level3">
+<h3 class="anchored" data-anchor-id="distribution-of-host-type-and-room-type">Distribution of host type and room type</h3>
+<p>Create column with single or multiple host types</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>listings <span class="ot">&lt;-</span> listings <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">host_type =</span> <span class="fu">ifelse</span>(calculated_host_listings_count <span class="sc">==</span><span class="dv">1</span>, <span class="st">"Single"</span>, <span class="st">"Multiple"</span>))</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a><span class="fu">mosaicplot</span>(listings<span class="sc">$</span>room_type <span class="sc">~</span> listings<span class="sc">$</span>host_type, <span class="at">color =</span> <span class="fu">c</span>(<span class="st">"steelblue"</span>, <span class="st">"wheat"</span>), <span class="at">xlab =</span> <span class="st">"Room Type"</span>, <span class="at">ylab =</span> <span class="st">"Host Type"</span>, <span class="at">main =</span> <span class="st">"Mosaic Plot of Room Type and Host Type"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="analysis-of-price-of-room-types-by-single-or-multiple-hosts" class="level3">
+<h3 class="anchored" data-anchor-id="analysis-of-price-of-room-types-by-single-or-multiple-hosts">Analysis of price of room types by single or multiple hosts</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set seed for reproducibility</span></span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>test2 <span class="ot">&lt;-</span> listings <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(room_type, host_type, neighbourhood_group, price)</span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a><span class="fu">grouped_ggbetweenstats</span>(</span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> test2,</span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> host_type,</span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> price,</span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">grouping.var =</span> room_type,</span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">ggsignif.args =</span> <span class="fu">list</span>(<span class="at">textsize =</span> <span class="dv">4</span>, <span class="at">tip_length =</span> <span class="fl">0.01</span>),</span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">p.adjust.method =</span> <span class="st">"bonferroni"</span>, <span class="co"># method for adjusting p-values for multiple comparisons</span></span>
+<span id="cb62-11"><a href="#cb62-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># adding new components to `ggstatsplot` default</span></span>
+<span id="cb62-12"><a href="#cb62-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">ggplot.component =</span> <span class="fu">list</span>(ggplot2<span class="sc">::</span><span class="fu">scale_y_continuous</span>(<span class="at">sec.axis =</span> ggplot2<span class="sc">::</span><span class="fu">dup_axis</span>())),</span>
+<span id="cb62-13"><a href="#cb62-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">k =</span> <span class="dv">3</span>,</span>
+<span id="cb62-14"><a href="#cb62-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">title.prefix =</span> <span class="st">"Room Type"</span>,</span>
+<span id="cb62-15"><a href="#cb62-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">palette =</span> <span class="st">"default_jama"</span>,</span>
+<span id="cb62-16"><a href="#cb62-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">package =</span> <span class="st">"ggsci"</span>,</span>
+<span id="cb62-17"><a href="#cb62-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">plotgrid.args =</span> <span class="fu">list</span>(<span class="at">nrow =</span> <span class="dv">2</span>),</span>
+<span id="cb62-18"><a href="#cb62-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">title.text =</span> <span class="st">"Differences in listing prices for single/multiple hosts by different room types"</span></span>
+<span id="cb62-19"><a href="#cb62-19" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Scale for y is already present.
+Adding another scale for y, which will replace the existing scale.
+Scale for y is already present.
+Adding another scale for y, which will replace the existing scale.
+Scale for y is already present.
+Adding another scale for y, which will replace the existing scale.
+Scale for y is already present.
+Adding another scale for y, which will replace the existing scale.</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="fu">grouped_ggbetweenstats</span>(</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> test2 <span class="sc">%&gt;%</span> <span class="fu">filter</span>(room_type <span class="sc">!=</span> <span class="st">"Hotel room"</span>),</span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">x =</span> host_type,</span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">y =</span> price,</span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">grouping.var =</span> neighbourhood_group,</span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">ggsignif.args =</span> <span class="fu">list</span>(<span class="at">textsize =</span> <span class="dv">4</span>, <span class="at">tip_length =</span> <span class="fl">0.01</span>),</span>
+<span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">p.adjust.method =</span> <span class="st">"bonferroni"</span>, <span class="co"># method for adjusting p-values for multiple comparisons</span></span>
+<span id="cb64-8"><a href="#cb64-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># adding new components to `ggstatsplot` default</span></span>
+<span id="cb64-9"><a href="#cb64-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),</span></span>
+<span id="cb64-10"><a href="#cb64-10" aria-hidden="true" tabindex="-1"></a>  <span class="co"># k = 3,</span></span>
+<span id="cb64-11"><a href="#cb64-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">title.prefix =</span> <span class="st">"Room Type"</span>,</span>
+<span id="cb64-12"><a href="#cb64-12" aria-hidden="true" tabindex="-1"></a>  <span class="at">palette =</span> <span class="st">"default_jama"</span>,</span>
+<span id="cb64-13"><a href="#cb64-13" aria-hidden="true" tabindex="-1"></a>  <span class="at">package =</span> <span class="st">"ggsci"</span>,</span>
+<span id="cb64-14"><a href="#cb64-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plotgrid.args = list(nrow = 2),</span></span>
+<span id="cb64-15"><a href="#cb64-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">title.text =</span> <span class="st">"Differences in listing prices for single/multiple hosts by different neighbourhoods"</span>, </span>
+<span id="cb64-16"><a href="#cb64-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">output =</span> <span class="st">"subtitle"</span></span>
+<span id="cb64-17"><a href="#cb64-17" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in min(x): no non-missing arguments to min; returning Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in max(x): no non-missing arguments to max; returning -Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in min(x): no non-missing arguments to min; returning Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in max(x): no non-missing arguments to max; returning -Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in min(x): no non-missing arguments to min; returning Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in max(x): no non-missing arguments to max; returning -Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in min(x): no non-missing arguments to min; returning Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in max(x): no non-missing arguments to max; returning -Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in min(x): no non-missing arguments to min; returning Inf</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in max(x): no non-missing arguments to max; returning -Inf</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="which-year-did-the-hosts-join-airbnb" class="level2">
+<h2 class="anchored" data-anchor-id="which-year-did-the-hosts-join-airbnb">Which year did the hosts join airbnb</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>host_byyear <span class="ot">&lt;-</span> d_listings <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(id, host_id, host_since) <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(<span class="at">year_joined =</span> <span class="fu">year</span>(host_since)) <span class="sc">%&gt;%</span> <span class="fu">drop_na</span>() <span class="sc">%&gt;%</span> <span class="fu">summarise</span>(<span class="at">number_hosts =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span> <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">change =</span> (number_hosts <span class="sc">-</span> <span class="fu">lag</span>(number_hosts)) <span class="sc">/</span> <span class="fu">lag</span>(number_hosts)<span class="sc">*</span><span class="dv">100</span>)</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(host_byyear, <span class="fu">aes</span>(<span class="at">x=</span>year_joined, <span class="at">y =</span> number_hosts)) <span class="sc">+</span> <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">fill =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span> </span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>   <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"New hosts by year"</span>, <span class="at">y =</span> <span class="st">"No. of hosts joined"</span>, <span class="at">x =</span> <span class="st">"year"</span>) <span class="sc">+</span></span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>   <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> number_hosts), <span class="at">vjust =</span> <span class="sc">-</span><span class="fl">0.3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Take-home_Ex03_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>4.2.3 Detailed Information on Hosts</p>
+</section>
 </section>
 <section id="spatial-distribution-of-airbnb-listings-in-singapore" class="level1">
 <h1>Spatial Distribution of Airbnb listings in Singapore</h1>
@@ -2731,9 +2905,9 @@ Adding another scale for y, which will replace the existing scale.</code></pre>
 <h2 class="anchored" data-anchor-id="handling-spatial-data-outliers">Handling Spatial Data Outliers</h2>
 <p>Identify listings that fall within the Water Cachement Area</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(listings, neighbourhood <span class="sc">==</span> <span class="st">"Central Water Catchment"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(listings, neighbourhood <span class="sc">==</span> <span class="st">"Central Water Catchment"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 18
+<pre><code># A tibble: 5 × 19
   id          name  host_id host_name neighbourhood_group neighbourhood latitude
   &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;     &lt;chr&gt;               &lt;chr&gt;            &lt;dbl&gt;
 1 36009935    Serv… 238891… Neha      North Region        Central Wate…     1.35
@@ -2741,15 +2915,16 @@ Adding another scale for y, which will replace the existing scale.</code></pre>
 3 43424855    Plac… 346107… Chris     North Region        Central Wate…     1.35
 4 46669109    Rent… 238891… Neha      North Region        Central Wate…     1.35
 5 9148448679… Rent… 444964… Richard   North Region        Central Wate…     1.36
-# ℹ 11 more variables: longitude &lt;dbl&gt;, room_type &lt;chr&gt;, price &lt;dbl&gt;,
+# ℹ 12 more variables: longitude &lt;dbl&gt;, room_type &lt;chr&gt;, price &lt;dbl&gt;,
 #   minimum_nights &lt;dbl&gt;, number_of_reviews &lt;dbl&gt;, last_review &lt;date&gt;,
 #   reviews_per_month &lt;dbl&gt;, calculated_host_listings_count &lt;dbl&gt;,
-#   availability_365 &lt;dbl&gt;, number_of_reviews_ltm &lt;dbl&gt;, license &lt;chr&gt;</code></pre>
+#   availability_365 &lt;dbl&gt;, number_of_reviews_ltm &lt;dbl&gt;, license &lt;chr&gt;,
+#   host_type &lt;chr&gt;</code></pre>
 </div>
 </div>
 <p>Remove listings in the Central Water Catchment, Sungei Kadut and Mandai areas</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>listings_clean <span class="ot">&lt;-</span> <span class="fu">filter</span>(listings_sf, <span class="sc">!</span>neighbourhood <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Central Water Catchment"</span>, <span class="st">"Sungei Kadut"</span>, <span class="st">"Mandai"</span>, <span class="st">"Western Water Catchment"</span>)) <span class="sc">%&gt;%</span> <span class="fu">st_as_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>listings_clean <span class="ot">&lt;-</span> <span class="fu">filter</span>(listings_sf, <span class="sc">!</span>neighbourhood <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Central Water Catchment"</span>, <span class="st">"Sungei Kadut"</span>, <span class="st">"Mandai"</span>, <span class="st">"Western Water Catchment"</span>)) <span class="sc">%&gt;%</span> <span class="fu">st_as_sf</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="mapping-airbnb-listings-in-singapore" class="level2">
@@ -2758,8 +2933,8 @@ Adding another scale for y, which will replace the existing scale.</code></pre>
 <h3 class="anchored" data-anchor-id="loading-basemap-raster-with-bounding-box">Loading basemap raster with bounding box</h3>
 <p>Read in OSM raster of listings data for plot view and create bounding box</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>sg_osm <span class="ot">&lt;-</span> tmaptools<span class="sc">::</span><span class="fu">read_osm</span>(listings_clean, <span class="at">ext=</span><span class="fl">1.3</span>)</span>
-<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>bb_sg_osm <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(listings_clean, <span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb79"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a>sg_osm <span class="ot">&lt;-</span> tmaptools<span class="sc">::</span><span class="fu">read_osm</span>(listings_clean, <span class="at">ext=</span><span class="fl">1.3</span>)</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>bb_sg_osm <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(listings_clean, <span class="at">crs =</span> <span class="dv">3414</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="listing-by-room-types-and-neighbourhood" class="level4">
 <h4 class="anchored" data-anchor-id="listing-by-room-types-and-neighbourhood">Listing by room types and neighbourhood</h4>
@@ -2779,8 +2954,8 @@ Adding another scale for y, which will replace the existing scale.</code></pre>
 <li>MP14_SUBZONE_WEB_PL.shp</li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>mpsz_sf <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>,</span>
-<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a>mpsz_sf <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="at">dsn =</span> <span class="st">"data/geospatial"</span>,</span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">layer =</span> <span class="st">"MP14_SUBZONE_WEB_PL"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Reading layer `MP14_SUBZONE_WEB_PL' from data source 
   `C:\Feliciaeng29\IS415-GAA\Take-home_Ex\Take-home_Ex03\data\geospatial' 

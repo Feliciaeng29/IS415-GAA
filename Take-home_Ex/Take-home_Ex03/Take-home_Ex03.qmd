@@ -339,8 +339,120 @@ sharedrooms <- conftest %>% filter(room_type == "Shared room")
 )
 ```
 
-4.2 Hosts & Listings
-4.2.1 Hosts with multiple listings
+# Hosts & Listings
+
+## Host with multiple listings
+
+Create a table of percetnage of hosts by number of listings
+
+```{r}
+list_byhost <- listings %>%
+                group_by(host_id, host_name) %>%
+                count(name = "number_of_listings", sort = TRUE) %>%
+                ungroup() %>%
+                group_by(number_of_listings) %>%
+                count(name = "number_of_hosts")
+```
+
+Plot above table
+
+```{r}
+ggplot(list_byhost, aes(x=number_of_listings, y= number_of_hosts/sum(number_of_hosts)*100)) +
+  geom_point() +
+  labs(y="Percentage of hosts", title = "% of hosts vs number of listings", x = "number of listings")
+```
+
+To explore the whether the market is dominated by hosts with single or multiple listings, we plot a Pareto chart by adding the cumulative frequency of the number of listings of hosts, to a descending list of airbnb rentals by host. We see that almost 75% of the Airbnb ‘stock’ are taken up by hosts with multiple listings.
+
+There are currently no regulations or legislation around the number of listings that a host may have, unlike in other cities that regulate the maximum number of listings (e.g. New York). People with more than 1 listing are likely to be agents managing these properties on behalf of landlords.
+
+However, there are restrictions on the minimum stay for short term rentals: 3 months for private housing and 6 months for HDB flats. This means that typical tourist stays (e.g. 2-7 days) in Airbnb listings would technically be illegal. Despite this, 89% of listings have a minimum stay of less than the legislated minimum stay.
+
+```{r}
+list_byhost <- list_byhost[order(list_byhost$number_of_listings, decreasing = TRUE),]
+list_byhost$number_of_listings1 <- factor(list_byhost$number_of_listings, levels = list_byhost$number_of_listings)
+list_byhost$listfreq <- list_byhost$number_of_hosts * list_byhost$number_of_listings
+list_byhost$cumul <- cumsum(list_byhost$listfreq)
+nr <- nrow(list_byhost)
+N <- sum(list_byhost$listfreq)
+y2 <- c("  0%", " 10%", " 20%", " 30%", " 40%", " 50%", " 60%", " 70%", " 80%", " 90%", "100%")
+ggplot(list_byhost, aes(x=number_of_listings1)) +
+  geom_bar(aes(y=number_of_hosts), fill = "blue", stat = "identity") +
+  geom_point(aes(x=number_of_listings1, y=cumul)) +
+  geom_line(aes(x=number_of_listings1, y=cumul)) +
+  geom_path(aes(y=cumul, group=1)) +
+  labs(y="Frequency", title = "Pareto Chart of hosts and listings", x = "No. of listings") +
+  theme(plot.margin = margin(c(1,1,1,1), unit="cm"), axis.text.x = element_text(angle=90, vjust=0.6)) +
+  annotate("text", x = nr + 3, y = seq(0, N, N/10), label = y2, size = 3.5, hjust = "inward")
+```
+
+### Distribution of host type and room type
+
+Create column with single or multiple host types
+
+```{r}
+listings <- listings %>% mutate(host_type = ifelse(calculated_host_listings_count ==1, "Single", "Multiple"))
+
+mosaicplot(listings$room_type ~ listings$host_type, color = c("steelblue", "wheat"), xlab = "Room Type", ylab = "Host Type", main = "Mosaic Plot of Room Type and Host Type")
+```
+
+### Analysis of price of room types by single or multiple hosts
+
+```{r}
+# Set seed for reproducibility
+set.seed(123)
+test2 <- listings %>% dplyr::select(room_type, host_type, neighbourhood_group, price)
+grouped_ggbetweenstats(
+  data = test2,
+  x = host_type,
+  y = price,
+  grouping.var = room_type,
+  ggsignif.args = list(textsize = 4, tip_length = 0.01),
+  p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
+  # adding new components to `ggstatsplot` default
+  ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
+  k = 3,
+  title.prefix = "Room Type",
+  palette = "default_jama",
+  package = "ggsci",
+  plotgrid.args = list(nrow = 2),
+  title.text = "Differences in listing prices for single/multiple hosts by different room types"
+)
+```
+```{r}
+grouped_ggbetweenstats(
+  data = test2 %>% filter(room_type != "Hotel room"),
+  x = host_type,
+  y = price,
+  grouping.var = neighbourhood_group,
+  ggsignif.args = list(textsize = 4, tip_length = 0.01),
+  p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
+  # adding new components to `ggstatsplot` default
+  # ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
+  # k = 3,
+  title.prefix = "Room Type",
+  palette = "default_jama",
+  package = "ggsci",
+  # plotgrid.args = list(nrow = 2),
+  title.text = "Differences in listing prices for single/multiple hosts by different neighbourhoods", 
+  output = "subtitle"
+)
+```
+
+## Which year did the hosts join airbnb
+
+```{r}
+host_byyear <- d_listings %>% dplyr::select(id, host_id, host_since) %>% group_by(year_joined = year(host_since)) %>% drop_na() %>% summarise(number_hosts = n()) %>% ungroup() %>% mutate(change = (number_hosts - lag(number_hosts)) / lag(number_hosts)*100)
+
+ggplot(host_byyear, aes(x=year_joined, y = number_hosts)) + geom_bar(stat = "identity", fill = "steelblue") + 
+   labs(title = "New hosts by year", y = "No. of hosts joined", x = "year") +
+   geom_text(aes(label = number_hosts), vjust = -0.3)
+```
+4.2.3 Detailed Information on Hosts
+
+```{r}
+
+```
 
 # Spatial Distribution of Airbnb listings in Singapore
 

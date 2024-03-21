@@ -368,6 +368,8 @@ There are currently no regulations or legislation around the number of listings 
 
 However, there are restrictions on the minimum stay for short term rentals: 3 months for private housing and 6 months for HDB flats. This means that typical tourist stays (e.g. 2-7 days) in Airbnb listings would technically be illegal. Despite this, 89% of listings have a minimum stay of less than the legislated minimum stay.
 
+Create Pareto Chart
+
 ```{r}
 list_byhost <- list_byhost[order(list_byhost$number_of_listings, decreasing = TRUE),]
 list_byhost$number_of_listings1 <- factor(list_byhost$number_of_listings, levels = list_byhost$number_of_listings)
@@ -386,17 +388,23 @@ ggplot(list_byhost, aes(x=number_of_listings1)) +
   annotate("text", x = nr + 3, y = seq(0, N, N/10), label = y2, size = 3.5, hjust = "inward")
 ```
 
-### Distribution of host type and room type
+#### Distribution of host type and room type
 
 Create column with single or multiple host types
 
 ```{r}
 listings <- listings %>% mutate(host_type = ifelse(calculated_host_listings_count ==1, "Single", "Multiple"))
+```
 
+```{r}
 mosaicplot(listings$room_type ~ listings$host_type, color = c("steelblue", "wheat"), xlab = "Room Type", ylab = "Host Type", main = "Mosaic Plot of Room Type and Host Type")
 ```
 
-### Analysis of price of room types by single or multiple hosts
+
+Most hosts with Single listings mainly offer private rooms, followed by shared rooms. This suggests they're likely renting out their extra or shared bedrooms to earn extra money. On the other hand, hosts offering entire homes or apartments might own investment properties or be away during the rental period. There are also a few hosts with single hotel room listings, which could be because of mistakes in the room type or because they offer special or boutique accommodations. Usually, hotel operators have multiple listings, so these single hotel room listings might be unique.
+
+
+#### Analysis of price of room types by single or multiple hosts
 
 ```{r}
 # Set seed for reproducibility
@@ -419,6 +427,9 @@ grouped_ggbetweenstats(
   title.text = "Differences in listing prices for single/multiple hosts by different room types"
 )
 ```
+
+
+
 ```{r}
 grouped_ggbetweenstats(
   data = test2 %>% filter(room_type != "Hotel room"),
@@ -448,10 +459,53 @@ ggplot(host_byyear, aes(x=year_joined, y = number_hosts)) + geom_bar(stat = "ide
    labs(title = "New hosts by year", y = "No. of hosts joined", x = "year") +
    geom_text(aes(label = number_hosts), vjust = -0.3)
 ```
-4.2.3 Detailed Information on Hosts
+
+
+## Detailed Information on Hosts
+
+How many listings do not have reviews
 
 ```{r}
+d_listings %>% filter(., host_acceptance_rate == "0%" | is.na(host_acceptance_rate)) %>% dplyr::select(id, host_acceptance_rate, number_of_reviews) %>% arrange(desc(number_of_reviews))
+```
 
+# Reviews
+
+## Listings with no reviews
+
+```{r}
+no_reviews <- listings_sf %>% filter(is.na(last_review))
+host_join <- d_listings %>% dplyr::select(id, host_since)
+no_reviews_host <- left_join(no_reviews, host_join, by = c("id")) %>% group_by(year_joined = year(host_since)) %>% summarise(number_hosts = n()) %>% drop_na()  %>% ungroup()
+```
+
+```{r}
+no_reviews_host$year_joined = as.character(no_reviews_host$year_joined)
+ggplot(no_reviews_host, aes(x=year_joined, y = number_hosts)) + geom_bar(stat = "identity", fill = "steelblue4") + 
+   labs(title = "Listings with no reviews - Hosts by year", y = "No. of hosts joined", x = "year") + geom_text(aes(label = number_hosts), vjust = -0.3) + scale_x_discrete(breaks = no_reviews_host$year_joined)
+```
+
+## Review score
+
+select relevant data for review scores
+
+```{r}
+review_scores <- d_listings %>% dplyr::select(id, host_id, number_of_reviews, room_type, review_scores_rating, review_scores_accuracy, review_scores_cleanliness, review_scores_communication, review_scores_checkin, review_scores_location, review_scores_value, reviews_per_month)
+```
+
+Plot histogram of overall rating
+
+```{r}
+ggplot(review_scores, aes(x=review_scores_rating)) + geom_histogram(aes(fill = room_type), bins = 20) + stat_bin(aes(label = ..count..), bins = 20, size = 3, geom= "text", vjust = -1)
+```
+
+### Dsitribution of overall review score
+
+Plot histogram of attribute score
+
+```{r}
+ggplot(gather(review_scores[, -c(1:5,12)], cols, value), aes(x = value)) + 
+       geom_histogram(binwidth = 1) + facet_grid(.~cols)
 ```
 
 # Spatial Distribution of Airbnb listings in Singapore
@@ -484,19 +538,10 @@ bb_sg_osm <- st_bbox(listings_clean, crs = 3414)
 
 Plotting neighbourhood listings on tmap
 
-tmap_mode("view")
 
-# Plotting points
 
-tmap_options(check.and.fix = TRUE)  # Set option to check and fix invalid polygons
-tm_basemap(leaflet::providers$OpenStreetMap) +
-tm_shape(nhood_map_sf) +
-  tm_polygons(alpha = 0.3) +
-tm_shape(listings_clean) +
-  tm_symbols(col="room_type", size = 0.2) +
-  tm_view(set.zoom.limits = c(11, 17)) +
-  tm_facets(by="room_type") +
-  tm_layout(legend.show = FALSE)  # Change to FALSE for consistency
+
+#### Rental prices by room type
 
 
 

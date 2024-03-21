@@ -111,7 +111,7 @@ In this take-home exercise, you are required to select one of the module of your
     -   Relevance to spatial order: Helps in handling temporal aspects of spatial data, which is crucial in understanding how spatial patterns change over time.
 
 ```{r}
-pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra, skimr, rstantools)
+pacman::p_load(tidyverse, knitr, rgdal, maptools, sf,raster,spatstat, tmap,tmaptools, gridExtra, leaflet, OpenStreetMap, ggstatsplot, statsExpressions, lubridate, raster, gridExtra, skimr, rstantools, rgeos)
 ```
 
 # Data that is available from Airbnb
@@ -538,15 +538,144 @@ bb_sg_osm <- st_bbox(listings_clean, crs = 3414)
 
 Plotting neighbourhood listings on tmap
 
+```{r}
+st_is_valid(nhood_map_sf)
+nhood_map_sf <- st_make_valid(nhood_map_sf)
+```
+
+```{r}
+st_is_valid(nhood_map_sf)
+```
+```{r}
+class(nhood_map_sf)
+```
+
+```{r}
+nhood_map_sf <- na.omit(nhood_map_sf)
+```
+
+Deleting cos after analyzing realise the geometries is invalid
+
+```{r}
+nhood_map_sf <- nhood_map_sf[-c(28, 45), ]
+```
 
 
+```{r}
+tmap_mode("view")
+
+# Plotting points
+tm_basemap(leaflet::providers$OpenStreetMap) +
+tm_shape(nhood_map_sf) +
+  tm_polygons(alpha = 0.3) +
+tm_shape(listings_clean) +
+  tm_symbols(col="room_type", size = 0.2) +
+  tm_view(set.zoom.limits = c(11, 17)) +
+  tm_facets(by="room_type") +
+  tm_layout(legend.show = F)
+```
 
 #### Rental prices by room type
 
+Removing price outliers
+
+```{r}
+listings_sf_price <- listings_clean %>% filter(price <= outlier_price)
+```
+
+```{r}
+tm_basemap(leaflet::providers$OpenStreetMap) +
+tm_shape(sg_osm, bbox=bb_sg_osm) +
+  tm_rgb() +
+tm_shape(nhood_map_sf) +
+  tm_polygons(alpha = 0.3) +
+  tm_shape(listings_sf_price) +
+  tm_symbols(col = "price", size = 0.2, palette = "YlOrBr", legend.hist = TRUE) +
+  # tm_view(set.zoom.limits = c(11, 18)) +
+  tm_facets(by="room_type") +
+  tm_layout(legend.outside = TRUE, legend.outside.position = "bottom", legend.stack = "horizontal", legend.hist.height = 1, legend.hist.width = 0.85, legend.outside.size=0.1)
+```
+
+#### Rental prices by room type and host type
+
+```{r}
+listings_sf_price <- listings_sf_price %>% mutate(host_type = ifelse(calculated_host_listings_count ==1, "Single", "Multiple"))
+```
+
+```{r}
+tm_basemap(leaflet::providers$OpenStreetMap) +
+tm_shape(sg_osm, bbox=bb_sg_osm) +
+  tm_rgb() +
+tm_shape(nhood_map_sf) +
+  tm_polygons(alpha = 0.3) +
+  tm_shape(listings_sf_price) +
+  tm_symbols(col = "host_type", shape = "price", size = 0.2, title.col = "Host Type", title.shape = "Price") +
+  tm_facets(by="room_type")+
+  tm_layout(legend.outside = TRUE, legend.outside.position = "bottom", legend.stack = "horizontal", legend.outside.size=0.1)
+```
+
+# Chlorpleth map of listings and median
+
+Summary of cleaned price listings by neighbourhood and room type
+
+```{r}
+# Create a summary of the cleaned price listings by neighbourhood and room type (number of listings and median price)
+listings_cleanprice_sum <- st_drop_geometry(listings_sf_price) %>%
+  group_by(neighbourhood, room_type) %>%
+  summarise(num_listings = n(), med_price = median(price), .groups = "keep") %>%
+  arrange(desc(num_listings))
+
+listings_join <- left_join(nhood_map_sf, listings_cleanprice_sum, by = c("neighbourhood"))
+#take out all the NA values data set
+listings_join <- na.omit(listings_join)
+```
+
+
+```{r}
+tmap_mode("plot")
+tmap_arrange(
+tm_basemap(leaflet::providers$OpenStreetMap) +
+tm_shape(sg_osm, bbox=bb_sg_osm) +
+  tm_rgb() +
+  tm_shape(listings_join) +
+   tm_polygons("med_price", title = "Median Price") +
+   tm_view(set.zoom.limits = c(10, 18)) + 
+   tm_facets(by="room_type", drop.NA.facets = T) +
+   tm_layout(legend.outside = TRUE, legend.outside.position = "bottom", legend.outside.size = 0.2),
+tm_basemap(leaflet::providers$OpenStreetMap) +
+tm_shape(sg_osm, bbox=bb_sg_osm) +
+  tm_rgb() +
+   tm_shape(listings_join) +
+   tm_polygons("num_listings", title = "No. of listings", palette = "Blues", alpha = 0.6) +
+   tm_view(set.zoom.limits = c(10, 18)) + 
+   tm_facets(by="room_type", drop.NA.facets = T) +
+   tm_layout(legend.outside = TRUE, legend.outside.position = "bottom", legend.outside.size = 0.2)
+)
+```
 
 
 
 # Data that will be used for wrangling subzone map
+
+listings to be converted from the listings_sf dataframe to SVY21 format (otherwise it will be out of bounds when using Spatstat) and converting to SpatialPoints (sp)
+#Remove listings from neighbourhoods that are not zoned for residential
+
+```{r}
+listings_clean <- st_transform(listings_clean, 3414)
+nonreslisting <- c("Tuas", "Pioneer")
+listings_clean <- listings_clean %>% filter(!neighbourhood %in% nonreslisting)
+listings_sp <- listings_clean %>% dplyr::select(geometry, room_type) %>% as(., Class = "Spatial")
+```
+
+```{r}
+summary(listings_sp)
+```
+
+```{r}
+plot(listings_sp)
+```
+
+## Wrangling subzone
 
 -   MP14_SUBZONE_WEB_PL.shp
 
@@ -554,6 +683,98 @@ Plotting neighbourhood listings on tmap
 mpsz_sf <- st_read(dsn = "data/geospatial",
                 layer = "MP14_SUBZONE_WEB_PL")
 ```
+
+```{r}
+sg_osm <- read_osm(listings_clean, ext=1.3)
+
+# Ensure that geometry is valid and check crs of subzone map
+mpsz_sf <- st_make_valid(mpsz_sf)
+all(st_is_valid(mpsz_sf))
+```
+
+```{r}
+crs(mpsz_sf)
+```
+
+```{r}
+mpsz_sf2 <- mpsz_sf %>% dplyr::select(SUBZONE_N, REGION_N)
+mpsz_sf2 <- st_transform(mpsz_sf2, st_crs(listings_clean))
+listings_sf2 <- listings_clean %>% dplyr::select(neighbourhood, room_type)
+listings_subzones <- st_join(listings_sf2, mpsz_sf2, prepared=TRUE, join=st_within)
+subzone_list <- unique(listings_subzones$SUBZONE_N)
+mpsz_sf3 <- mpsz_sf %>% filter(SUBZONE_N %in% subzone_list)
+plot(mpsz_sf3["SUBZONE_N"])
+```
+
+## Splitting data into subregions
+
+```{r}
+region_list <- unique(listings_subzones$REGION_N)
+
+# Create a store of region SF
+region_store_sf <- list()
+
+# Create list of sub-regions
+for (i in seq_along(region_list)) {
+  region_name <- paste(tolower(word(region_list[i],1)))
+  region_name <- gsub("-", "", region_name)
+  var_name <- paste("sf", region_name, sep="_")
+  region_store_sf[[region_name]] <- mpsz_sf3[mpsz_sf3$REGION_N == region_list[i],c("SUBZONE_N", "PLN_AREA_N")]
+}
+
+plot(region_store_sf$northeast)
+
+```
+
+```{r}
+# Convert to owin store, with subzone boundaries dissolved
+region_store_owin <- list()
+
+for (i in seq_along(region_list)) {
+  region_name <- paste(tolower(word(region_list[i],1))) %>% gsub("-", "", .)
+  var_name <- paste("sf", region_name, sep="_")
+  region_store_owin[[region_name]] <- mpsz_sf3[mpsz_sf3$REGION_N == region_list[i],3] %>% st_union(.) %>% as(., Class = "Spatial") %>% as(., "owin")
+}
+
+# Plot owin to check
+plot(region_store_owin$northeast)
+```
+
+```{r}
+# create ppp in owin objects 
+listings_ppp <- as.ppp(listings_sp)
+marks(listings_ppp) <- factor(listings_clean$room_type)
+listing_ppp_jit <- rjitter(listings_ppp, retry = TRUE, nsim = 1, drop = TRUE)
+```
+
+```{r}
+# Create ppp in owin objects split by sub-regions, rescaled to km
+ppp_east <- listing_ppp_jit[region_store_owin$east] %>% rescale(., 1000, "km")
+ppp_central <- listing_ppp_jit[region_store_owin$central] %>% rescale(., 1000, "km")
+ppp_west <- listing_ppp_jit[region_store_owin$west] %>% rescale(., 1000, "km")
+ppp_north <- listing_ppp_jit[region_store_owin$north] %>% rescale(., 1000, "km")
+ppp_northeast <- listing_ppp_jit[region_store_owin$northeast] %>% rescale(., 1000, "km")
+
+# create object store split by region, then by room type of form ppp_store$region$roomtype
+types_room <- unique(listings_sf$room_type)
+ppp_store4 <- list()
+for (i in seq_along(region_list)) {
+  region_name <- paste(tolower(word(region_list[i],1))) %>% gsub("-", "", .)
+  ppp_store4[[region_name]] <- list()
+  for (j in seq_along(types_room)) {
+    room_name <- paste(tolower(word(types_room[j],1)))
+    var_name <- paste("ppp", region_name, sep="_")
+    ppp_store4[[region_name]][["all"]] <- eval(as.name(var_name))
+    ppp_store4[[region_name]][[room_name]] <- ppp_store4[[region_name]][["all"]] [ppp_store4[[region_name]][["all"]][["marks"]]==types_room[j]]
+  }
+}
+```
+
+## First Order Anaylsis (Kernel Density Estimation)
+
+
+##  Second Order Analysis
+
 
 # UI for Proposed Idea
 

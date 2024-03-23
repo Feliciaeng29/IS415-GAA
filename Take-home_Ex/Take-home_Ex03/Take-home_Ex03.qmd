@@ -316,55 +316,52 @@ ggplot(listings_cleanprice, aes(x=neighbourhood_group, fill = neighbourhood_grou
 # ctrl + Shift + c
 # We utilize ggstatsplot to conduct confirmatory data analysis on prices across various neighborhoods. Our null hypothesis posits that there is no difference in listing prices among different neighborhood groups. We reject this hypothesis if the p-value exceeds 0.05 at a 95% significance level. Initially, we extract only the necessary variables (neighbourhood_group, room_type, and price) and feed them into the ggbetweenstats() function. This function generates the p-value and a violin plot illustrating listing prices categorized by neighborhood group. Additionally, it computes pairwise comparisons between the grouped variables, displaying only the significant comparisons along with their respective p-values.
 
-conftest <- listings_cleanprice %>% dplyr::select(neighbourhood_group, room_type, price)
-ggbetweenstats(
-  data = conftest,
-  x = neighbourhood_group,
-  y = price
-)
+# conftest <- listings_cleanprice %>% dplyr::select(neighbourhood_group, room_type, price)
+# ggbetweenstats(
+#   data = conftest,
+#   x = neighbourhood_group,
+#   y = price
+# )
 ```
 
 ```{r}
 #| echo: false
-conftest2 <- conftest %>% filter(room_type != "Shared room", room_type != "Hotel room")
-grouped_ggbetweenstats(
-  data = conftest2,
-  x = neighbourhood_group,
-  y = price,
-  grouping.var = room_type,
-  ggsignif.args = list(textsize = 4, tip_length = 0.01),
-  p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
-  # adding new components to `ggstatsplot` default
-  ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
-  k = 3,
-  title.prefix = "Room Type",
-  palette = "default_jama",
-  package = "ggsci",
-  plotgrid.args = list(nrow = 2),
-  title.text = "Differences in listing prices by neighbourhoods for different room types"
-)
+# conftest2 <- conftest %>% filter(room_type != "Shared room", room_type != "Hotel room")
+# grouped_ggbetweenstats(
+#   data = conftest2,
+#   x = neighbourhood_group,
+#   y = price,
+#   grouping.var = room_type,
+#   ggsignif.args = list(textsize = 4, tip_length = 0.01),
+#   p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
+#   # adding new components to `ggstatsplot` default
+#   ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
+#   k = 3,
+#   title.prefix = "Room Type",
+#   palette = "default_jama",
+#   package = "ggsci",
+#   plotgrid.args = list(nrow = 2),
+#   title.text = "Differences in listing prices by neighbourhoods for different room types"
+# )
 ```
 
 ```{r}
 #| echo: false
-sharedrooms <- conftest %>% filter(room_type == "Shared room")
- ggbetweenstats(
-   data = sharedrooms,
-   x = neighbourhood_group,
-   y = price
-)
+# sharedrooms <- conftest %>% filter(room_type == "Shared room")
+#  ggbetweenstats(
+#    data = sharedrooms,
+#    x = neighbourhood_group,
+#    y = price
+# )
 ```
 
-
-
-```{r}
-#| echo: false
 # Hosts & Listings
 
 ## Host with multiple listings
 
-# Create a table of percetnage of hosts by number of listings
+Create a table of percetnage of hosts by number of listings
 
+```{r}
 list_byhost <- listings %>%
                 group_by(host_id, host_name) %>%
                 count(name = "number_of_listings", sort = TRUE) %>%
@@ -376,29 +373,15 @@ list_byhost <- listings %>%
 Plot above table
 
 ```{r}
-#| echo: false
-
-# Plot above table
-
 ggplot(list_byhost, aes(x=number_of_listings, y= number_of_hosts/sum(number_of_hosts)*100)) +
   geom_point() +
   labs(y="Percentage of hosts", title = "% of hosts vs number of listings", x = "number of listings")
-
-
-# To explore the whether the market is dominated by hosts with single or multiple listings, we plot a Pareto chart by adding the cumulative frequency of the number of listings of hosts, to a descending list of airbnb rentals by host. We see that almost 75% of the Airbnb ‘stock’ are taken up by hosts with multiple listings.
-# 
-# There are currently no regulations or legislation around the number of listings that a host may have, unlike in other cities that regulate the maximum number of listings (e.g. New York). People with more than 1 listing are likely to be agents managing these properties on behalf of landlords.
-# 
-# However, there are restrictions on the minimum stay for short term rentals: 3 months for private housing and 6 months for HDB flats. This means that typical tourist stays (e.g. 2-7 days) in Airbnb listings would technically be illegal. Despite this, 89% of listings have a minimum stay of less than the legislated minimum stay.
 ```
 
 
-Create Pareto Chart
+Create Chart
 
 ```{r}
-#| echo: false
-
-# Create Pareto Chart
 list_byhost <- list_byhost[order(list_byhost$number_of_listings, decreasing = TRUE),]
 list_byhost$number_of_listings1 <- factor(list_byhost$number_of_listings, levels = list_byhost$number_of_listings)
 list_byhost$listfreq <- list_byhost$number_of_hosts * list_byhost$number_of_listings
@@ -411,73 +394,71 @@ ggplot(list_byhost, aes(x=number_of_listings1)) +
   geom_point(aes(x=number_of_listings1, y=cumul)) +
   geom_line(aes(x=number_of_listings1, y=cumul)) +
   geom_path(aes(y=cumul, group=1)) +
-  labs(y="Frequency", title = "Pareto Chart of hosts and listings", x = "No. of listings") +
+  labs(y="Frequency", title = "Chart of hosts and listings", x = "No. of listings") +
   theme(plot.margin = margin(c(1,1,1,1), unit="cm"), axis.text.x = element_text(angle=90, vjust=0.6)) +
   annotate("text", x = nr + 3, y = seq(0, N, N/10), label = y2, size = 3.5, hjust = "inward")
 ```
 
-
-```{r}
-#| echo: false
 #### Distribution of host type and room type
 
-# Create column with single or multiple host types
+Create column with single or multiple host types
+
+```{r}
 listings <- listings %>% mutate(host_type = ifelse(calculated_host_listings_count ==1, "Single", "Multiple"))
 ```
 
+Plot to visualise
+
 ```{r}
-#| echo: false
-mosaicplot(listings$room_type ~ listings$host_type, color = c("steelblue", "wheat"), xlab = "Room Type", ylab = "Host Type", main = "Mosaic Plot of Room Type and Host Type")
-
-# Most hosts with Single listings mainly offer private rooms, followed by shared rooms. This suggests they're likely renting out their extra or shared bedrooms to earn extra money. On the other hand, hosts offering entire homes or apartments might own investment properties or be away during the rental period. There are also a few hosts with single hotel room listings, which could be because of mistakes in the room type or because they offer special or boutique accommodations. Usually, hotel operators have multiple listings, so these single hotel room listings might be unique.
+mosaicplot(listings$room_type ~ listings$host_type, color = c("steelblue", "wheat"), xlab = "Room Type", ylab = "Host Type", main = "Plot of Room Type and Host Type")
 ```
+Most hosts with Single listings mainly offer private rooms, followed by shared rooms. This suggests they're likely renting out their extra or shared bedrooms to earn extra money. On the other hand, hosts offering entire homes or apartments might own investment properties or be away during the rental period. There are also a few hosts with single hotel room listings, which could be because of mistakes in the room type or because they offer special or boutique accommodations. Usually, hotel operators have multiple listings, so these single hotel room listings might be unique.
 
 
-
+```{r}
 #### Analysis of price of room types by single or multiple hosts
 
-```{r}
 # Set seed for reproducibility
-set.seed(123)
-test2 <- listings %>% dplyr::select(room_type, host_type, neighbourhood_group, price)
-grouped_ggbetweenstats(
-  data = test2,
-  x = host_type,
-  y = price,
-  grouping.var = room_type,
-  ggsignif.args = list(textsize = 4, tip_length = 0.01),
-  p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
-  # adding new components to `ggstatsplot` default
-  ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
-  k = 3,
-  title.prefix = "Room Type",
-  palette = "default_jama",
-  package = "ggsci",
-  plotgrid.args = list(nrow = 2),
-  title.text = "Differences in listing prices for single/multiple hosts by different room types"
-)
+# set.seed(123)
+# test2 <- listings %>% dplyr::select(room_type, host_type, neighbourhood_group, price)
+# grouped_ggbetweenstats(
+#   data = test2,
+#   x = host_type,
+#   y = price,
+#   grouping.var = room_type,
+#   ggsignif.args = list(textsize = 4, tip_length = 0.01),
+#   p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
+#   # adding new components to `ggstatsplot` default
+#   ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
+#   k = 3,
+#   title.prefix = "Room Type",
+#   palette = "default_jama",
+#   package = "ggsci",
+#   plotgrid.args = list(nrow = 2),
+#   title.text = "Differences in listing prices for single/multiple hosts by different room types"
+# )
 ```
 
 
 
 ```{r}
-grouped_ggbetweenstats(
-  data = test2 %>% filter(room_type != "Hotel room"),
-  x = host_type,
-  y = price,
-  grouping.var = neighbourhood_group,
-  ggsignif.args = list(textsize = 4, tip_length = 0.01),
-  p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
-  # adding new components to `ggstatsplot` default
-  # ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
-  # k = 3,
-  title.prefix = "Room Type",
-  palette = "default_jama",
-  package = "ggsci",
-  # plotgrid.args = list(nrow = 2),
-  title.text = "Differences in listing prices for single/multiple hosts by different neighbourhoods", 
-  output = "subtitle"
-)
+# grouped_ggbetweenstats(
+#   data = test2 %>% filter(room_type != "Hotel room"),
+#   x = host_type,
+#   y = price,
+#   grouping.var = neighbourhood_group,
+#   ggsignif.args = list(textsize = 4, tip_length = 0.01),
+#   p.adjust.method = "bonferroni", # method for adjusting p-values for multiple comparisons
+#   # adding new components to `ggstatsplot` default
+#   # ggplot.component = list(ggplot2::scale_y_continuous(sec.axis = ggplot2::dup_axis())),
+#   # k = 3,
+#   title.prefix = "Room Type",
+#   palette = "default_jama",
+#   package = "ggsci",
+#   # plotgrid.args = list(nrow = 2),
+#   title.text = "Differences in listing prices for single/multiple hosts by different neighbourhoods", 
+#   output = "subtitle"
+# )
 ```
 
 ## Which year did the hosts join airbnb
@@ -801,6 +782,137 @@ for (i in seq_along(region_list)) {
 ```
 
 ##  Second Order Analysis
+
+### K Function test for regions
+
+K-function test for East Region
+
+```{r}
+Ktest_east_hotel <- Kest(ppp_store4$east$hotel, correction = "Ripley")
+Ktest_east_hotel.csr <- envelope(ppp_store4$east$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_east_entire <- Kest(ppp_store4$east$entire, correction = "Ripley")
+Ktest_east_entire.csr <- envelope(ppp_store4$east$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_east_private <- Kest(ppp_store4$east$private, correction = "Ripley")
+Ktest_east_private.csr <- envelope(ppp_store4$east$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_east_shared <- Kest(ppp_store4$east$shared, correction = "Ripley")
+Ktest_east_shared.csr <- envelope(ppp_store4$east$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+Ktestfiles = as.list(dir(pattern="Ktest__*"))
+lapply(Ktestfiles,load,.GlobalEnv)
+```
+
+### East Region
+
+```{r}
+summary(ppp_store4$east$all$marks)
+```
+
+Plot K-function test results for East Region
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_east_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_east_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_east_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_east_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+### West Region
+
+```{r}
+Ktest_west_hotel <- Kest(ppp_store4$west$hotel, correction = "Ripley")
+Ktest_west_hotel.csr <- envelope(ppp_store4$west$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_west_entire <- Kest(ppp_store4$west$entire, correction = "Ripley")
+Ktest_west_entire.csr <- envelope(ppp_store4$west$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_west_private <- Kest(ppp_store4$west$private, correction = "Ripley")
+Ktest_west_private.csr <- envelope(ppp_store4$west$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_west_shared <- Kest(ppp_store4$west$shared, correction = "Ripley")
+Ktest_west_shared.csr <- envelope(ppp_store4$west$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+Ktestfiles = as.list(dir(pattern="Ktest__*"))
+lapply(Ktestfiles,load,.GlobalEnv)
+```
+
+```{r}
+summary(ppp_store4$west$all$marks)
+```
+
+Plot K-function test results for West Region
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_west_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_west_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_west_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_west_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+### North Region
+
+```{r}
+Ktest_north_hotel <- Kest(ppp_store4$north$hotel, correction = "Ripley")
+Ktest_north_hotel.csr <- envelope(ppp_store4$north$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_north_entire <- Kest(ppp_store4$north$entire, correction = "Ripley")
+Ktest_north_entire.csr <- envelope(ppp_store4$north$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_north_private <- Kest(ppp_store4$north$private, correction = "Ripley")
+Ktest_north_private.csr <- envelope(ppp_store4$north$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_north_shared <- Kest(ppp_store4$north$shared, correction = "Ripley")
+Ktest_north_shared.csr <- envelope(ppp_store4$north$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+summary(ppp_store4$north$all$marks)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_north_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_north_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_north_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_north_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+
+### Northeast Region
+
+```{r}
+Ktest_northeast_hotel <- Kest(ppp_store4$northeast$hotel, correction = "Ripley")
+Ktest_northeast_hotel.csr <- envelope(ppp_store4$northeast$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_northeast_entire <- Kest(ppp_store4$northeast$entire, correction = "Ripley")
+Ktest_northeast_entire.csr <- envelope(ppp_store4$northeast$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_northeast_private <- Kest(ppp_store4$northeast$private, correction = "Ripley")
+Ktest_northeast_private.csr <- envelope(ppp_store4$northeast$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_northeast_shared <- Kest(ppp_store4$northeast$shared, correction = "Ripley")
+Ktest_northeast_shared.csr <- envelope(ppp_store4$northeast$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+summary(ppp_store4$northeast$all$marks)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_northeast_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_northeast_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_northeast_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_northeast_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
 
 ### K test using fourier transform
 

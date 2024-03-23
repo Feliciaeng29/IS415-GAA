@@ -770,10 +770,327 @@ for (i in seq_along(region_list)) {
 }
 ```
 
+##  Second Order Analysis
+
+K-function test for East Region
+
+```{r}
+Ktest_east_hotel <- Kest(ppp_store4$east$hotel, correction = "Ripley")
+Ktest_east_hotel.csr <- envelope(ppp_store4$east$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_east_entire <- Kest(ppp_store4$east$entire, correction = "Ripley")
+Ktest_east_entire.csr <- envelope(ppp_store4$east$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_east_private <- Kest(ppp_store4$east$private, correction = "Ripley")
+Ktest_east_private.csr <- envelope(ppp_store4$east$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_east_shared <- Kest(ppp_store4$east$shared, correction = "Ripley")
+Ktest_east_shared.csr <- envelope(ppp_store4$east$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+Ktestfiles = as.list(dir(pattern="Ktest__*"))
+lapply(Ktestfiles,load,.GlobalEnv)
+```
+
+### East Region
+
+```{r}
+summary(ppp_store4$east$all$marks)
+```
+
+Plot K-function test results for East Region
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_east_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_east_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_east_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_east_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+### West Region
+
+```{r}
+Ktest_west_hotel <- Kest(ppp_store4$west$hotel, correction = "Ripley")
+Ktest_west_hotel.csr <- envelope(ppp_store4$west$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_west_entire <- Kest(ppp_store4$west$entire, correction = "Ripley")
+Ktest_west_entire.csr <- envelope(ppp_store4$west$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_west_private <- Kest(ppp_store4$west$private, correction = "Ripley")
+Ktest_west_private.csr <- envelope(ppp_store4$west$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_west_shared <- Kest(ppp_store4$west$shared, correction = "Ripley")
+Ktest_west_shared.csr <- envelope(ppp_store4$west$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+Ktestfiles = as.list(dir(pattern="Ktest__*"))
+lapply(Ktestfiles,load,.GlobalEnv)
+```
+
+```{r}
+summary(ppp_store4$west$all$marks)
+```
+
+Plot K-function test results for West Region
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_west_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_west_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_west_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_west_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+### North Region
+
+```{r}
+Ktest_north_hotel <- Kest(ppp_store4$north$hotel, correction = "Ripley")
+Ktest_north_hotel.csr <- envelope(ppp_store4$north$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_north_entire <- Kest(ppp_store4$north$entire, correction = "Ripley")
+Ktest_north_entire.csr <- envelope(ppp_store4$north$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_north_private <- Kest(ppp_store4$north$private, correction = "Ripley")
+Ktest_north_private.csr <- envelope(ppp_store4$north$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_north_shared <- Kest(ppp_store4$north$shared, correction = "Ripley")
+Ktest_north_shared.csr <- envelope(ppp_store4$north$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+summary(ppp_store4$north$all$marks)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_north_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_north_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_north_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_north_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+
+### Northeast Region
+
+```{r}
+Ktest_northeast_hotel <- Kest(ppp_store4$northeast$hotel, correction = "Ripley")
+Ktest_northeast_hotel.csr <- envelope(ppp_store4$northeast$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_northeast_entire <- Kest(ppp_store4$northeast$entire, correction = "Ripley")
+Ktest_northeast_entire.csr <- envelope(ppp_store4$northeast$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_northeast_private <- Kest(ppp_store4$northeast$private, correction = "Ripley")
+Ktest_northeast_private.csr <- envelope(ppp_store4$northeast$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_northeast_shared <- Kest(ppp_store4$northeast$shared, correction = "Ripley")
+Ktest_northeast_shared.csr <- envelope(ppp_store4$northeast$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+summary(ppp_store4$northeast$all$marks)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_northeast_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_northeast_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_northeast_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_northeast_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+
+### Central Region
+
+```{r}
+Ktest_central_hotel <- Kest(ppp_store4$central$hotel, correction = "Ripley")
+Ktest_central_hotel.csr <- envelope(ppp_store4$central$hotel, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_central_entire <- Kest(ppp_store4$central$entire, correction = "Ripley")
+Ktest_central_entire.csr <- envelope(ppp_store4$central$entire, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_central_private <- Kest(ppp_store4$central$private, correction = "Ripley")
+Ktest_central_private.csr <- envelope(ppp_store4$central$private, Kest, nsim=99, rank=1, glocal=TRUE)
+
+Ktest_central_shared <- Kest(ppp_store4$central$shared, correction = "Ripley")
+Ktest_central_shared.csr <- envelope(ppp_store4$central$shared, Kest, nsim=99, rank=1, glocal=TRUE)
+```
+
+```{r}
+summary(ppp_store4$central$all$marks)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(Ktest_central_hotel.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_central_entire.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_central_private.csr, .-r~r, xlab="d", ylab="K(d)-r")
+plot(Ktest_central_shared.csr, .-r~r, xlab="d", ylab="K(d)-r")
+```
+
+### K test using fourier transform
+
+Create ppp for all of Singapore with only the subzones containing listings and dissolve the boundaries  
+
+```{r}
+
+```
+
+Create ppp store of the 4 different room types
+
+```{r}
+sigma_shared <- bw.diggle(ppp_store$shared)
+sigma_private <- bw.diggle(ppp_store$private)
+sigma_entire <- bw.diggle(ppp_store$entire)
+```
+
+#### Hotel Rooms
+
+```{r}
+ptm <- proc.time()
+set.seed(123)
+Kfft_hotel <- Kest.fft(ppp_store$hotel, sigma_hotel)
+Kfft_hotel.csr <- envelope(ppp_store$hotel, Kest.fft, sigma = sigma_hotel, nsim = 300, rank = 1, global=TRUE)
+```
+
+```{r}
+proc.time() - ptm
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(Kfft_hotel.csr, . - r ~ r, xlab="d", ylab="K(d)-r")
+plot(Kfft_hotel.csr, . - r ~ r, xlab="d", ylab="K(d)-r", xlim=range(0,1))
+```
+
+#### Shared rooms
+
+K-test using FFT for shared room
+
+```{r}
+set.seed(123)
+ptm <- proc.time()
+Kfft_shared <- Kest.fft(ppp_store$shared, sigma_shared)
+Kfft_shared.csr <- envelope(ppp_store$shared, Kest.fft, sigma = sigma_shared, nsim = 300, rank = 1, global=TRUE)
+proc.time() - ptm
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(Kfft_shared.csr, . -r ~r, xlab="d", ylab="K(d)-r")
+plot(Kfft_shared.csr, . - r ~ r, xlab="d", ylab="K(d)-r", xlim = range(0,1))
+```
+
+
+#### Private rooms
+
+```{r}
+ptm <- proc.time()
+Kfft_private <- Kest.fft(ppp_store$private, sigma_private)
+Kfft_private.csr <- envelope(ppp_store$private, Kest.fft, sigma = sigma_private, nsim = 300, rank = 1, global=TRUE)
+proc.time() - ptm
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(Kfft_private.csr, . -r ~r, xlab="d", ylab="K(d)-r")
+plot(Kfft_private.csr, . - r ~ r, xlab="d", ylab="K(d)-r", xlim = range(0,1))
+```
+
+#### Entire home/ apartments
+
+```{r}
+ptm <- proc.time()
+Kfft_entire <- Kest.fft(ppp_store$entire, sigma_entire)
+Kfft_entire.csr <- envelope(ppp_store$entire, Kest.fft, sigma = sigma_entire, nsim = 300, rank = 1, global=TRUE)
+proc.time() - ptm
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot(Kfft_entire.csr, . -r ~r, xlab="d", ylab="K(d)-r")
+plot(Kfft_entire.csr, . - r ~ r, xlab="d", ylab="K(d)-r", xlim = range(0,1))
+```
+
+### Summary of Cluster Radius
+
+Save clustering distance for density plot
+
+```{r}
+kdist <- list("private" = 0.4, "entire" = 0.3, "hotel" = 0.25, "shared"=0.6)
+```
+
+
 ## First Order Anaylsis (Kernel Density Estimation)
 
+```{r}
+# Function maps the ppp (in km) with either an adaptive bandwidth ("adaptive) or the specified bandwidth to be used ("bw.diggle, bw.ppl, etc) 
+kdemap <- function(ppp, y, polyshape, gtitle) {
+  # ppp.km <- rescale(ppp, 1000, "km")
+# Computing kernel density estimation using specified bandwidth
+    if (y == "adaptive") {
+      kde_ppp <- adaptive.density(ppp, method = "kernel")
+    } else if (is.numeric(y)) {
+      kde_ppp <- density(ppp, sigma = y, edge = TRUE, kernel = "gaussian")
+      }
+      else {
+      kde_ppp <- density(ppp, sigma = eval(as.name(y)), edge = TRUE, kernel = "gaussian")
+    }
+  rastmap <- as.SpatialGridDataFrame.im(kde_ppp) %>% raster(.)
+  projection(rastmap) <- CRS("+init=EPSG:3414 +units=km")
+  rastmap1 <- disaggregate(rastmap, fact=3) # increase resolution of the raster map by factor of 3 to approximately 50m 
 
-##  Second Order Analysis
+  tm_shape(sg_osm) +
+    tm_rgb() +
+  tm_shape(polyshape) +
+    # tm_text("SUBZONE_N", size = 0.6) +
+    tm_polygons(alpha = 0) +
+  tm_shape(rastmap1) +
+    tm_raster("v", alpha = 0.7, palette = "YlOrBr") +
+    tm_layout(legend.position = c("right", "bottom"), frame = FALSE, main.title = gtitle, main.title.position="center", main.title.size = 1.25) +
+    tm_view(set.zoom.limits = c(11, 17))
+}
+```
+
+### KDE for different room types
+
+#### Private rooms
+
+```{r}
+kdemap(ppp_store$private, kdist$private, mpsz_sf3[,3], "KDE private rooms")
+```
+
+#### Entire home/ apartments
+
+```{r}
+tmap_mode("view")
+kdemap(ppp_store$entire, kdist$entire, mpsz_sf3[,3], "KDE entire homes/apt")
+```
+
+### Shared rooms
+
+```{r}
+kdemap(ppp_store$shared, kdist$shared, mpsz_sf3[,3], "KDE shared rooms")
+```
+
+### Hotel rooms
+
+```{r}
+kdemap(ppp_store$hotel, kdist$hotel, mpsz_sf3[,3], "KDE hotel rooms")
+```
+
+#### Using adaptive bandwidth
+
+```{r}
+kdemap(ppp_store$private, "adaptive", mpsz_sf3[,3], "KDE private rooms adaptive bw")
+```
+
+```{r}
+tmap_mode("view")
+kdemap(ppp_store$entire, "adaptive", mpsz_sf3[,3], "KDE entire homes/apt adaptive bw")
+```
 
 
 # UI for Proposed Idea
